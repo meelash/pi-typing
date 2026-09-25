@@ -1,0 +1,6 @@
+# Start-up with no keyboard plugged in: the prompt, then the USB log after 6 s.
+keyboard off
+wait 2000
+shot plug-keyboard
+wait 6000
+shot no-keyboard-log

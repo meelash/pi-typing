@@ -1,0 +1,19 @@
+# Runs on scripts/site/capitals-progress.txt: an English player who has passed lessons 1-17.
+wait 3000
+key enter
+expect courses
+key enter
+expect map
+shot map-progress
+key enter
+expect intro
+wait 700
+shot intro-capitals
+key enter
+expect typing
+# Capitals typed with the Shift on the same hand as the letter.
+shift left
+solve 14
+shot shift-tip
+key caps
+shot capslock

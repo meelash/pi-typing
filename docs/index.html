@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typing Adventure</title>
+<meta name="description" content="A touch-typing tutor for children in English, Arabic and Urdu that runs on a Raspberry Pi with no operating system and no internet.">
+<meta property="og:title" content="Typing Adventure">
+<meta property="og:description" content="A touch-typing tutor for children in English, Arabic and Urdu, on a Raspberry Pi with no operating system and no internet.">
+<meta property="og:image" content="img/typing.webp">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='14' fill='%23FF7A45'/%3E%3Crect x='4' y='4' width='56' height='50' rx='14' fill='%23FFB347'/%3E%3Ctext x='32' y='41' font-family='sans-serif' font-weight='700' font-size='30' text-anchor='middle' fill='%232B3045'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="topbar">
+	<div class="wrap">
+		<a class="brand" href="#top">
+			<svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="14" fill="#FF7A45"/><rect x="4" y="4" width="56" height="50" rx="14" fill="#FFB347"/><text x="32" y="41" font-family="Andika, sans-serif" font-weight="700" font-size="30" text-anchor="middle" fill="#2B3045">T</text></svg>
+			Typing Adventure
+		</a>
+		<nav aria-label="Sections">
+			<a href="#why">Why</a>
+			<a href="#approach">How it teaches</a>
+			<a href="#tour">Screens</a>
+			<a href="#buy">What to buy</a>
+			<a href="#setup">Set up</a>
+			<a href="#update">Update</a>
+			<a href="#help">Help</a>
+			<a href="#inside">What's inside</a>
+			<a href="#build">Build</a>
+		</nav>
+	</div>
+</header>
+
+<main id="top">
+
+<!-- Hero ------------------------------------------------------------------>
+<div class="hero">
+	<div class="wrap">
+		<div>
+			<div class="keycaps" aria-hidden="true">
+				<span class="keycap" style="background:var(--f-pinky)">T</span>
+				<span class="keycap" style="background:var(--f-ring)">Y</span>
+				<span class="keycap" style="background:var(--f-middle)">P</span>
+				<span class="keycap" style="background:var(--f-pointer-l)">E</span>
+				<span class="keycap" lang="ar" style="background:var(--f-ring)">ك</span>
+				<span class="keycap" lang="ar" style="background:var(--f-middle)">ت</span>
+				<span class="keycap" lang="ar" style="background:var(--f-pointer-r)">ب</span>
+			</div>
+			<h1>Typing Adventure</h1>
+			<div class="names">
+				<span lang="ar" dir="rtl">مغامرة الكتابة</span>
+				<span lang="ur" dir="rtl">ٹائپنگ کی مہم</span>
+			</div>
+			<p class="lead">A touch-typing tutor for children that turns a Raspberry Pi into a machine that can do one thing: teach typing. It has no operating system, no internet, no apps and no accounts. Switch it on and it is ready.</p>
+			<ul class="pills">
+				<li>No operating system</li>
+				<li style="--dot:var(--accent)">No internet, Wi-Fi or Bluetooth</li>
+				<li style="--dot:var(--f-pointer-r)">English · <span lang="ar">العربية</span> · <span lang="ur">اردو</span></li>
+				<li style="--dot:var(--gold)">Up to 8 children</li>
+			</ul>
+			<div class="buttons">
+				<a class="btn" data-gh="releases/latest">Download the latest release</a>
+				<a class="btn secondary" href="#buy">What you need</a>
+			</div>
+		</div>
+		<div class="monitor">
+			<div class="bezel"><img src="img/typing.webp" width="1280" height="720" alt="A typing lesson: the line 'fff jjj fjf', an on-screen keyboard with the F and J keys highlighted in finger colours, and two coloured hands."></div>
+			<div class="stand"></div>
+			<div class="base"></div>
+		</div>
+	</div>
+</div>
+
+<!-- Why ------------------------------------------------------------------->
+<section id="why" class="alt">
+	<div class="wrap">
+		<span class="kicker">Why it exists</span>
+		<h2>A computer that can only teach typing</h2>
+		<p class="intro">Children learn to type best with short, regular practice and no distractions. An ordinary computer or tablet comes with a web browser, games, videos, notifications, updates and logins. Typing Adventure removes all of that. The Raspberry Pi runs one program and nothing else, so the only thing a child can do with it is practise typing.</p>
+		<div class="cards">
+			<div class="card">
+				<div class="icon" style="background:var(--f-pinky)"><svg viewBox="0 0 24 24"><path d="M2 8.8a15 15 0 0 1 20 0M5.2 12.2a10.5 10.5 0 0 1 13.6 0M8.5 15.6a5.5 5.5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/><path d="M3 3l18 18"/></svg></div>
+				<h4>No internet, by design</h4>
+				<p>The program contains no networking code at all: no Wi-Fi, no Bluetooth, no Ethernet driver. It can't go online, and nothing online can reach it. There's nothing to set up or filter.</p>
+			</div>
+			<div class="card">
+				<div class="icon" style="background:var(--f-ring)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg></div>
+				<h4>No operating system</h4>
+				<p>There is no Linux, Windows or Android underneath. The SD card holds the Pi's boot firmware, two settings files and the tutor. The tutor itself drives the screen, keyboard, card and sound.</p>
+			</div>
+			<div class="card">
+				<div class="icon" style="background:var(--f-middle)"><svg viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M5.6 6.6a8 8 0 1 0 12.8 0"/></svg></div>
+				<h4>On in seconds, off at the plug</h4>
+				<p>It starts in a few seconds and saves progress after every lesson, so turning it off at the wall is fine. There are no updates, pop-ups or passwords to deal with.</p>
+			</div>
+			<div class="card">
+				<div class="icon" style="background:var(--f-pointer-l)"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c.5 4 3 7 6 8M11 5c-.8 4-3.5 7-7 8"/><path d="M12 21l4.5-10L21 21M13.8 17.5h5.4"/></svg></div>
+				<h4>Three languages, written properly</h4>
+				<p>Full courses in English, Arabic and Urdu. Arabic letters join and run right to left. Urdu is drawn in its traditional Nastaliq script. Menus show all three languages.</p>
+			</div>
+			<div class="card">
+				<div class="icon" style="background:var(--f-pointer-r)"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 13.6c2.7.3 4.5 2.6 4.5 5.4"/></svg></div>
+				<h4>Shared by the family</h4>
+				<p>Up to eight children each get their own name, colour and progress, kept in a plain text file on the SD card. Nothing leaves the machine.</p>
+			</div>
+			<div class="card">
+				<div class="icon" style="background:var(--f-thumb)"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6-4.5-4.1 6-.7z"/></svg></div>
+				<h4>Fun that is still practice</h4>
+				<p>Stars, points, streaks, 13 badges and a balloon-popping game. The game only uses keys the child has already learned, so playing it is practice too.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Approach -------------------------------------------------------------->
+<section id="approach">
+	<div class="wrap">
+		<span class="kicker">The approach</span>
+		<h2>How it teaches</h2>
+		<p class="intro">Each course follows the classic touch-typing order: fingers rest on the home row, and each new key is learned with the finger that should press it.</p>
+
+		<ol class="steps-strip">
+			<li style="--c:var(--f-pointer-l)"><strong>Home row first</strong>Starting from the two keys with bumps: <kbd>F</kbd> <kbd>J</kbd> in English, <kbd lang="ar">ب</kbd> <kbd lang="ar">ت</kbd> in Arabic, <kbd lang="ur">ف</kbd> <kbd lang="ur">ج</kbd> in Urdu. Then one finger pair at a time.</li>
+			<li style="--c:var(--f-pointer-r)"><strong>Top row, then bottom row</strong>Two keys per lesson, most frequent letters first, so real words come early.</li>
+			<li style="--c:var(--f-middle)"><strong>Review lessons</strong>After each group, a lesson that mixes everything learned so far.</li>
+			<li style="--c:var(--f-ring)"><strong>Shift, punctuation, numbers</strong>Capitals (or the Arabic and Urdu Shift letters), punctuation, then the number row.</li>
+			<li style="--c:var(--f-pinky)"><strong>Final challenge</strong>Whole, real sentences using everything.</li>
+		</ol>
+
+		<div class="split" style="margin-top:34px">
+			<div>
+				<h3 style="margin-top:0">Only letters the child already knows</h3>
+				<p>Every new-key lesson goes from drills of the new keys, to mixes with keys learned earlier, to <strong>real words spelled only with letters already taught</strong>:</p>
+				<div class="drill-lines" aria-label="Lines from lesson 4, which teaches A and semicolon">
+					<div><span>New keys</span><code>aaa ;;; a;a ;a; ;; ;;a</code></div>
+					<div><span>Mixed</span><code>la affa k;d la daa fkaf</code></div>
+					<div><span>Real words</span><code>ask salads fads salad lad</code></div>
+				</div>
+				<p style="font-size:15.5px;color:var(--ink-soft)">From lesson 4, which adds <kbd>A</kbd> and <kbd>;</kbd> to the six keys already learned.</p>
+				<p>Arabic and Urdu words are spelled correctly: words that need a hamza wait until the hamza lesson, and full stops wait until the punctuation lesson.</p>
+
+				<h3>A colour for every finger</h3>
+				<p>The on-screen keyboard lights up the <strong>next key</strong> in the colour of the finger that should press it, and a pair of coloured hands shows which finger that is, like colour-coded typing gloves.</p>
+			</div>
+			<div>
+				<h3 style="margin-top:0">Accuracy first</h3>
+				<p>Mistakes can't be erased with Backspace. The child presses the right key to carry on, which builds accuracy before speed. The results screen lists the keys that caused the most mistakes.</p>
+				<div class="table-scroll">
+					<table style="min-width:0">
+						<thead><tr><th>Result</th><th>Needs</th></tr></thead>
+						<tbody>
+							<tr><td><span class="stars">★</span><span style="color:var(--faint)">★★</span> passed</td><td>90% accuracy</td></tr>
+							<tr><td><span class="stars">★★</span><span style="color:var(--faint)">★</span></td><td>95% accuracy</td></tr>
+							<tr><td><span class="stars">★★★</span></td><td>98% accuracy and the lesson's target speed (8 to 18 words per minute)</td></tr>
+						</tbody>
+					</table>
+				</div>
+				<h3>Good habits, gently</h3>
+				<p>If a child holds Shift with the <em>same</em> hand as the capital letter, a tip suggests the other hand. If Caps Lock is on, the tutor says so.</p>
+			</div>
+		</div>
+
+		<h3>The courses</h3>
+		<div class="table-scroll">
+			<table>
+				<thead><tr><th>Course</th><th>Lessons</th><th>Keyboard layout</th></tr></thead>
+				<tbody>
+					<tr><td>English</td><td>23, ending with number keys and whole sentences</td><td>US English</td></tr>
+					<tr><td><span lang="ar">العربية</span> Arabic</td><td>26, including the hamza forms and the number keys</td><td>Standard Arabic (101). A bilingual keyboard with Arabic letters printed on it matches the screen exactly.</td></tr>
+					<tr><td><span lang="ur">اردو</span> Urdu</td><td>26, in Nastaliq script (numbers still to come)</td><td>Urdu phonetic (CRULP): each letter sits on the English key that sounds alike, <span lang="ur">ا</span> on A, <span lang="ur">ب</span> on B, so an ordinary English keyboard works.</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+
+<!-- Tour ------------------------------------------------------------------>
+<section id="tour" class="alt">
+	<div class="wrap">
+		<span class="kicker">A tour</span>
+		<h2>Every screen</h2>
+		<p class="intro">Click any screenshot to see it full size, then use the arrow keys to step through them.</p>
+		<p class="sim-note">These screenshots come from the project's desktop simulator. It runs the same tutor code as the Pi and draws the same pixels, with key presses typed by a script.</p>
+
+		<div class="tour-group">
+			<h3>Starting up</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/splash.webp" width="1280" height="720" loading="lazy" alt="Start screen with bouncing coloured keycaps and the title in three languages."></button><figcaption><strong>Start screen</strong>Shown for a moment while the Pi finds the keyboard.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/players.webp" width="1280" height="720" loading="lazy" alt="Players screen with four player cards and a New player card."></button><figcaption><strong>Who is typing today?</strong>Each child picks their own card. Stars earned so far are shown under each name.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/new-player.webp" width="1280" height="720" loading="lazy" alt="New player screen with the name Sara typed and a row of colours to pick from."></button><figcaption><strong>New player</strong>Type a name and pick a colour with the arrow keys.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/new-player-ur.webp" width="1280" height="720" loading="lazy" alt="New player screen with an Urdu name typed."></button><figcaption><strong>Names in any script</strong><kbd>Tab</kbd> switches between English, Arabic and Urdu letters.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/courses.webp" width="1280" height="720" loading="lazy" alt="Course picker with English, Arabic and Urdu cards."></button><figcaption><strong>Choose a course</strong>English, Arabic or Urdu, each with its own progress.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>The lesson map</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/map-start.webp" width="1280" height="720" loading="lazy" alt="A lesson map at the start: only the first lesson, f j, is open."></button><figcaption><strong>The journey starts</strong>Lessons open one at a time. Balloon Pop and the badges are at the bottom.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/map.webp" width="1280" height="720" loading="lazy" alt="A lesson map with 17 lessons finished, three stars each, and the capital letters lesson next."></button><figcaption><strong>Further along</strong>Stars under each lesson; review lessons are marked with a star, the final challenge with a crown.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>A lesson</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/intro.webp" width="1280" height="720" loading="lazy" alt="Lesson 1 introduction showing the F and J keys, the fingers that press them, and the keyboard."></button><figcaption><strong>Meet the new keys</strong>Each new key is shown with the finger that presses it.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/typing.webp" width="1280" height="720" loading="lazy" alt="Typing a line of f and j drills with one mistake marked in red."></button><figcaption><strong>Typing</strong>Typed letters turn green. A wrong key flashes red on the keyboard and the child tries again.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/combo.webp" width="1280" height="720" loading="lazy" alt="A 'Combo 10!' celebration during a lesson."></button><figcaption><strong>Streaks</strong>Ten, 25, 50 correct keys in a row get a small celebration and extra points.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/pause.webp" width="1280" height="720" loading="lazy" alt="Paused lesson with options to continue or leave."></button><figcaption><strong>Pause</strong><kbd>Esc</kbd> pauses; the lesson can be continued or left.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>Gentle corrections</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/intro-capitals.webp" width="1280" height="720" loading="lazy" alt="Capital letters lesson introduction: hold Shift with one hand and press the letter with the other hand."></button><figcaption><strong>Capital letters</strong>The capitals lesson explains which hand holds Shift.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/shift-tip.webp" width="1280" height="720" loading="lazy" alt="Typing capitalised words with a tip: press Shift with your other hand."></button><figcaption><strong>Use the other hand</strong>A tip appears if Shift is pressed with the same hand as the letter.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/capslock.webp" width="1280" height="720" loading="lazy" alt="A warning that Caps Lock is on."></button><figcaption><strong>Caps Lock</strong>An accidental Caps Lock is pointed out rather than counted as mistakes.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>Results and badges</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/results.webp" width="1280" height="720" loading="lazy" alt="Lesson complete with three stars, 99% accuracy, 57 words per minute and new badges."></button><figcaption><strong>Lesson complete</strong>Stars, accuracy, speed, points and any new badges.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/results-practise.webp" width="1280" height="720" loading="lazy" alt="Lesson complete with one star, 91% accuracy, and the D key to practise."></button><figcaption><strong>Keys to practise</strong>The keys that caused the most mistakes, and a hint for earning more stars.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/badges.webp" width="1280" height="720" loading="lazy" alt="The badges screen with 13 badges, some earned in colour and some still grey."></button><figcaption><strong>13 badges</strong>From First Steps and Home Row Hero to Rocket (30 words per minute), Bilingual and Graduate.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>Balloon Pop</h3>
+			<p>A game that only uses the keys learned so far, with single letters or whole words. Every 10 balloons clears a level, and each level is faster. The score is <strong>levels cleared × letters in play</strong> (doubled for words), so learning more letters raises the score. Each set of letters keeps its own best level, and the start screen shows the top score of all players, with the record holder's name.</p>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/game-intro.webp" width="1280" height="720" loading="lazy" alt="Balloon Pop start screen with letters or words mode, start level, best level and top score."></button><figcaption><strong>Start screen</strong>Letters or words, and <kbd>Up</kbd>/<kbd>Down</kbd> to start at a level already reached.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/game.webp" width="1280" height="720" loading="lazy" alt="Balloons with the letters f and j floating up over green hills."></button><figcaption><strong>Pop them before they fly away</strong>Typing a balloon's letter pops it. Three missed balloons end the game.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/game-over.webp" width="1280" height="720" loading="lazy" alt="Game over panel: score 2, levels times letters, new record, new top score for everyone."></button><figcaption><strong>Game over</strong>How the score was made, personal records and the family top score.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/game-words-ur.webp" width="1280" height="720" loading="lazy" alt="Balloon Pop start screen in Urdu with words mode selected."></button><figcaption><strong>In every language</strong>Here in Urdu, in words mode.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3><span lang="ar">العربية</span> The Arabic course</h3>
+			<p>The screens switch to Arabic and run right to left. Letters join as they would in print, including the lam-alef ligature, and numbers are shown in Arabic digits.</p>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/map-ar.webp" width="1280" height="720" loading="lazy" alt="The Arabic lesson map, running right to left."></button><figcaption><strong>Arabic lesson map</strong>26 lessons, from <span lang="ar">ب ت</span> to the final challenge.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/intro-ar.webp" width="1280" height="720" loading="lazy" alt="The first Arabic lesson introducing the keys ب and ت on an Arabic keyboard."></button><figcaption><strong>The Arabic keyboard</strong>Standard Arabic layout, with the home-row bumps on <span lang="ar">ب</span> and <span lang="ar">ت</span>.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/typing-ar.webp" width="1280" height="720" loading="lazy" alt="Typing joined Arabic letters with a combo counter."></button><figcaption><strong>Joined letters</strong>Letters connect as they are typed, right to left.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3><span lang="ur">اردو</span> The Urdu course</h3>
+			<p>Urdu is written in <strong>Nastaliq</strong>, where letters sit on a sloping line and change shape with their neighbours. The tutor shapes it with the same text engine used by web browsers, so words look the way they do in books.</p>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/map-ur.webp" width="1280" height="720" loading="lazy" alt="The Urdu lesson map."></button><figcaption><strong>Urdu lesson map</strong>26 lessons on the Urdu phonetic layout.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/typing-ur.webp" width="1280" height="720" loading="lazy" alt="The first Urdu lesson, drilling ف and ج in Nastaliq."></button><figcaption><strong>The first lesson</strong><span lang="ur">ف</span> and <span lang="ur">ج</span>, on the F and J keys.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/typing-ur-review.webp" width="1280" height="720" loading="lazy" alt="An Urdu review lesson with real words and the thumb highlighted for the space bar."></button><figcaption><strong>Real words</strong>A review lesson using only letters already learned.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/typing-ur-final.webp" width="1280" height="720" loading="lazy" alt="An Urdu lesson with punctuation."></button><figcaption><strong>Punctuation</strong>Urdu full stop, comma and question mark.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/results-ur.webp" width="1280" height="720" loading="lazy" alt="Urdu results screen with three stars and a Graduate badge."></button><figcaption><strong>Final challenge complete</strong>With the Graduate badge.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/map-ur-done.webp" width="1280" height="720" loading="lazy" alt="A finished Urdu lesson map, every lesson with three stars."></button><figcaption><strong>Every lesson done</strong>A full map of three-star lessons.</figcaption></figure>
+			</div>
+		</div>
+
+		<div class="tour-group">
+			<h3>For grown-ups</h3>
+			<div class="shots">
+				<figure class="shot"><button type="button"><img src="img/delete-player.webp" width="1280" height="720" loading="lazy" alt="A confirmation asking whether to remove the player Sara."></button><figcaption><strong>Removing a player</strong><kbd>Delete</kbd> on the players screen, then <kbd>Y</kbd> to confirm.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/plug-keyboard.webp" width="1280" height="720" loading="lazy" alt="Start screen asking to plug in a keyboard, in three languages."></button><figcaption><strong>No keyboard yet</strong>The start screen waits for a keyboard to be plugged in.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/no-keyboard-log.webp" width="1280" height="720" loading="lazy" alt="Still no keyboard after six seconds: a system log appears under the message."></button><figcaption><strong>Still no keyboard?</strong>After about 6 seconds the USB log appears, to photograph for help.</figcaption></figure>
+				<figure class="shot"><button type="button"><img src="img/log.webp" width="1280" height="720" loading="lazy" alt="The system log screen, opened with F12."></button><figcaption><strong>System log</strong><kbd>F12</kbd> on any screen shows what the hardware reported. (Simulator lines shown here.)</figcaption></figure>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- What to buy ----------------------------------------------------------->
+<section id="buy">
+	<div class="wrap">
+		<span class="kicker">Shopping list</span>
+		<h2>What you need</h2>
+		<p class="intro">A Raspberry Pi 3 B+, a power supply and a memory card, plus a screen and keyboard you may already have.</p>
+
+		<div class="diagram">
+			<svg viewBox="0 0 760 360" role="img" aria-labelledby="diag-title">
+				<title id="diag-title">What plugs in where: the microSD card goes in the slot on the Pi's short edge, the keyboard in a USB port, and the power supply, HDMI screen and headphones along the long edge.</title>
+				<g fill="none" stroke="#9aa1bd" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round">
+					<path d="M150 115 C 200 115, 220 120, 262 120"/>
+					<path d="M497 82 C 540 82, 560 95, 592 95"/>
+					<path d="M298 186 C 298 230, 170 225, 160 262"/>
+					<path d="M356 186 C 356 215, 380 222, 380 248"/>
+					<path d="M431 186 C 431 230, 600 222, 610 262"/>
+				</g>
+				<!-- Pi board -->
+				<rect x="266" y="40" width="226" height="146" rx="12" fill="#3aa35b"/>
+				<rect x="266" y="40" width="226" height="146" rx="12" fill="none" stroke="#2c7f46" stroke-width="3"/>
+				<g fill="#e7c65a"><circle cx="280" cy="54" r="5"/><circle cx="478" cy="54" r="5"/><circle cx="280" cy="172" r="5"/><circle cx="478" cy="172" r="5"/></g>
+				<rect x="296" y="50" width="130" height="10" rx="2" fill="#1f5f33"/>
+				<rect x="350" y="92" width="44" height="44" rx="4" fill="#2b3045"/>
+				<text x="372" y="118" text-anchor="middle" fill="#cfd6f5" font-family="Andika, sans-serif" font-size="11" font-weight="700">Pi 3 B+</text>
+				<rect x="452" y="54" width="46" height="32" rx="3" fill="#c9ced9" stroke="#8b92a8" stroke-width="2"/>
+				<rect x="452" y="92" width="46" height="32" rx="3" fill="#c9ced9" stroke="#8b92a8" stroke-width="2"/>
+				<rect x="448" y="132" width="50" height="42" rx="3" fill="#b0b6c6" stroke="#8b92a8" stroke-width="2"/>
+				<rect x="287" y="176" width="22" height="12" rx="2" fill="#c9ced9" stroke="#8b92a8" stroke-width="2"/>
+				<rect x="338" y="174" width="36" height="14" rx="2" fill="#c9ced9" stroke="#8b92a8" stroke-width="2"/>
+				<circle cx="431" cy="180" r="8" fill="#2b3045"/>
+				<rect x="258" y="104" width="12" height="32" rx="2" fill="#8b92a8"/>
+				<g font-family="Andika, sans-serif" font-size="15" fill="#2b3045" font-weight="700">
+					<!-- SD card -->
+					<path d="M78 70 h46 l14 14 v62 a4 4 0 0 1 -4 4 h-56 a4 4 0 0 1 -4 -4 v-72 a4 4 0 0 1 4 -4z" fill="#2f3e75"/>
+					<rect x="84" y="78" width="6" height="14" fill="#ffc53d"/><rect x="94" y="78" width="6" height="14" fill="#ffc53d"/><rect x="104" y="78" width="6" height="14" fill="#ffc53d"/><rect x="114" y="78" width="6" height="14" fill="#ffc53d"/>
+					<text x="106" y="176" text-anchor="middle">microSD card</text>
+					<text x="106" y="194" text-anchor="middle" font-weight="400" font-size="13" fill="#5b6180">slot underneath</text>
+					<!-- Keyboard -->
+					<rect x="594" y="62" width="150" height="64" rx="10" fill="#2f3e75"/>
+					<g fill="#fff"><rect x="604" y="72" width="16" height="12" rx="3"/><rect x="624" y="72" width="16" height="12" rx="3"/><rect x="644" y="72" width="16" height="12" rx="3"/><rect x="664" y="72" width="16" height="12" rx="3"/><rect x="684" y="72" width="16" height="12" rx="3"/><rect x="704" y="72" width="30" height="12" rx="3"/>
+					<rect x="610" y="89" width="16" height="12" rx="3"/><rect x="650" y="89" width="16" height="12" rx="3"/><rect x="670" y="89" width="16" height="12" rx="3"/><rect x="690" y="89" width="16" height="12" rx="3"/><rect x="710" y="89" width="24" height="12" rx="3"/>
+					<rect x="636" y="106" width="70" height="12" rx="3"/></g>
+					<rect x="630" y="89" width="16" height="12" rx="3" fill="#7bd389"/><rect x="690" y="89" width="16" height="12" rx="3" fill="#6ec6ff"/>
+					<text x="669" y="148" text-anchor="middle">USB keyboard</text>
+					<!-- Power -->
+					<rect x="118" y="264" width="80" height="56" rx="10" fill="#fff" stroke="#2b3045" stroke-width="3"/>
+					<path d="M140 320 v14 M176 320 v14" stroke="#2b3045" stroke-width="5" stroke-linecap="round"/>
+					<path d="M162 276 l-10 16 h12 l-10 16" fill="none" stroke="#ff7a45" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+					<text x="158" y="354" text-anchor="middle">Power supply</text>
+					<!-- Screen -->
+					<rect x="316" y="248" width="128" height="78" rx="8" fill="#2b3045"/>
+					<rect x="324" y="256" width="112" height="62" rx="3" fill="#fff6e0"/>
+					<rect x="332" y="266" width="96" height="14" rx="4" fill="#fff"/>
+					<g><rect x="344" y="290" width="10" height="10" rx="2" fill="#f78fb3"/><rect x="358" y="290" width="10" height="10" rx="2" fill="#ffb347"/><rect x="372" y="290" width="10" height="10" rx="2" fill="#7bd389"/><rect x="386" y="290" width="10" height="10" rx="2" fill="#6ec6ff"/><rect x="400" y="290" width="10" height="10" rx="2" fill="#ffe066"/></g>
+					<rect x="370" y="326" width="20" height="10" fill="#2b3045"/>
+					<text x="380" y="354" text-anchor="middle">HDMI screen or TV</text>
+					<!-- Headphones -->
+					<path d="M584 304 v-12 a26 26 0 0 1 52 0 v12" fill="none" stroke="#2b3045" stroke-width="5"/>
+					<rect x="576" y="292" width="16" height="26" rx="6" fill="#ff7a45"/><rect x="628" y="292" width="16" height="26" rx="6" fill="#ff7a45"/>
+					<text x="610" y="342" text-anchor="middle">Headphones</text>
+					<text x="610" y="358" text-anchor="middle" font-weight="400" font-size="13" fill="#5b6180">optional</text>
+				</g>
+			</svg>
+		</div>
+
+		<div class="buy">
+			<div class="card">
+				<span class="tag">Required</span>
+				<h4>Raspberry Pi 3 Model B+</h4>
+				<p>The tutor is built for and tested on this exact board. Newer models such as the Pi 4 and Pi 5 won't start it. Buy it from an <a href="https://www.raspberrypi.com/resellers/">approved reseller</a>. A <strong>case</strong> is worth getting too, so small hands can't touch the board.</p>
+				<p style="margin-top:6px"><a href="https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/">Product page</a></p>
+			</div>
+			<div class="card">
+				<span class="tag">Required</span>
+				<h4>Power supply, micro-USB, 5.1 V 2.5 A</h4>
+				<p>The official Raspberry Pi micro-USB supply is the safe choice. Phone chargers often give too little power, which can make the keyboard or the whole Pi unreliable.</p>
+				<p style="margin-top:6px"><a href="https://www.raspberrypi.com/products/micro-usb-power-supply/">Official supply</a></p>
+			</div>
+			<div class="card">
+				<span class="tag">Required</span>
+				<h4>A microSD card</h4>
+				<p>Any size works, since the tutor uses only 64 MB. A branded 8 to 32 GB card is ideal. Flashing the card erases it, so use an empty one. You also need a way to connect it to a computer, such as an SD slot or a small USB card reader.</p>
+			</div>
+			<div class="card">
+				<span class="tag">Required</span>
+				<h4>A USB keyboard</h4>
+				<p>Any wired USB keyboard, or a wireless one that comes with its <strong>own USB receiver</strong>. Several keyboards can be plugged in at once.</p>
+				<ul>
+					<li>Bluetooth-only keyboards <strong>won't work</strong>: the tutor has no Bluetooth.</li>
+					<li>For Arabic, an Arabic/English keyboard with both alphabets printed on the keys matches the screen exactly.</li>
+					<li>For English and Urdu, an ordinary US English keyboard is right.</li>
+				</ul>
+			</div>
+			<div class="card">
+				<span class="tag">Required</span>
+				<h4>A screen with HDMI, and an HDMI cable</h4>
+				<p>Any computer monitor or TV with an HDMI input. The Pi 3 B+ has a full-size HDMI socket, so a normal HDMI cable fits.</p>
+			</div>
+			<div class="card">
+				<span class="tag opt">Optional</span>
+				<h4>Headphones or speakers</h4>
+				<p>For the key clicks and celebration sounds: headphones or powered speakers with a 3.5 mm plug, into the Pi's headphone jack. Speakers built into an HDMI screen also work after changing <a href="#settings">one setting</a>.</p>
+			</div>
+		</div>
+		<div class="note"><p><strong>Not needed:</strong> a mouse, a network cable, Wi-Fi, an account, or any software on the Pi. The only software you install is on your own computer, to write the card once.</p></div>
+	</div>
+</section>
+
+<!-- Set up ---------------------------------------------------------------->
+<section id="setup" class="alt">
+	<div class="wrap">
+		<span class="kicker">About 10 minutes</span>
+		<h2>Set it up</h2>
+		<p class="intro">You write the tutor onto the microSD card once, using any Windows, Mac or Linux computer. After that the Pi never needs another computer.</p>
+		<ol class="howto">
+			<li>
+				<h4>Download the card image</h4>
+				<p>Go to the <a data-gh="releases/latest">latest release</a> and download <code>typing-adventure-vX.Y.img.xz</code> (a few megabytes). There is no need to unpack it.</p>
+			</li>
+			<li>
+				<h4>Install Raspberry Pi Imager</h4>
+				<p>Imager is the Raspberry Pi Foundation's free tool for writing cards. Get it from <a href="https://www.raspberrypi.com/software/">raspberrypi.com/software</a> for Windows, macOS or Linux (Ubuntu: <code>sudo apt install rpi-imager</code>).</p>
+			</li>
+			<li>
+				<h4>Write the image to the card</h4>
+				<ol>
+					<li>Put the microSD card in your computer and open Imager.</li>
+					<li><strong>Device:</strong> choose <em>Raspberry Pi 3</em>.</li>
+					<li><strong>Operating system:</strong> scroll to the bottom and choose <em>Use custom</em>, then pick the <code>.img.xz</code> file you downloaded.</li>
+					<li><strong>Storage:</strong> choose your microSD card. Check that it really is the card: everything on it will be erased.</li>
+					<li>If Imager offers <em>OS customisation</em> (Wi-Fi, user name and so on), choose <strong>No</strong>. None of it applies, since there's no operating system.</li>
+					<li>Write, wait for it to verify, then take the card out.</li>
+				</ol>
+				<p>You can use <a href="https://etcher.balena.io/">balenaEtcher</a> instead, or <code>dd</code> on Linux and macOS. Both accept the compressed file.</p>
+				<div class="note"><p><strong>Alternative without flashing:</strong> format a card as <strong>FAT32</strong>, then unzip <code>typing-adventure-vX.Y-sdcard-files.zip</code> from the same release and copy its files onto the card, not into a folder. Windows only offers FAT32 for cards of 32 GB or less. For bigger cards, use the <a href="https://www.sdcard.org/downloads/formatter/">SD Card Formatter</a> or the flashing method above.</p></div>
+			</li>
+			<li>
+				<h4>Plug everything in</h4>
+				<p>Put the card in the slot under the Pi (label facing away from the board). Connect the screen, keyboard and headphones. <strong>Connect the power supply last</strong>: the Pi switches on as soon as it has power.</p>
+			</li>
+			<li>
+				<h4>Create players and start</h4>
+				<p>Choose <strong>New player</strong>, type a name (<kbd>Tab</kbd> switches between English, Arabic and Urdu letters), pick a colour with <kbd>←</kbd> <kbd>→</kbd> and press <kbd>Enter</kbd>. Choose a course, then lesson 1. Progress is saved on the card after every lesson and game.</p>
+			</li>
+		</ol>
+
+		<h3 id="keys">Keys</h3>
+		<div class="table-scroll">
+			<table>
+				<thead><tr><th>Key</th><th>What it does</th></tr></thead>
+				<tbody>
+					<tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>Move around menus and the lesson map</td></tr>
+					<tr><td><kbd>Enter</kbd></td><td>Choose; start a lesson; next lesson on the results screen</td></tr>
+					<tr><td><kbd>Esc</kbd></td><td>Go back; pause a lesson</td></tr>
+					<tr><td><kbd>R</kbd></td><td>Try the lesson again, on the results screen</td></tr>
+					<tr><td><kbd>Tab</kbd></td><td>Switch the letters used for a name; letters or words in Balloon Pop</td></tr>
+					<tr><td><kbd>F2</kbd></td><td>Sound on or off</td></tr>
+					<tr><td><kbd>Delete</kbd></td><td>Remove the selected player, on the players screen (then <kbd>Y</kbd> to confirm)</td></tr>
+					<tr><td><kbd>F12</kbd></td><td>System log, for checking hardware (arrows, <kbd>PgUp</kbd>/<kbd>PgDn</kbd>, <kbd>Home</kbd>/<kbd>End</kbd> scroll it)</td></tr>
+				</tbody>
+			</table>
+		</div>
+
+		<h3 id="settings">Settings</h3>
+		<p class="prose">The card has a small text file, <code>cmdline.txt</code>, holding the settings on a <strong>single line</strong>. Open it in any text editor on your computer. By default it contains:</p>
+		<pre><code>sounddev=sndpwm usbspeed=full</code></pre>
+		<div class="table-scroll">
+			<table>
+				<thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+				<tbody>
+					<tr><td><code>sounddev=sndpwm</code></td><td>Sound through the headphone jack (default)</td></tr>
+					<tr><td><code>sounddev=sndhdmi</code></td><td>Sound through speakers built into the HDMI screen</td></tr>
+					<tr><td><code>sounddev=none</code></td><td>No sound at all</td></tr>
+					<tr><td><code>usbspeed=full</code></td><td>Leave this in. Without it, some keyboards aren't recognised.</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+
+<!-- Update ---------------------------------------------------------------->
+<section id="update">
+	<div class="wrap">
+		<span class="kicker">Keeps every player's progress</span>
+		<h2>Updating to a new version</h2>
+		<p class="intro">The whole tutor is one file on the card, <code>kernel8.img</code>. To update, replace just that file.</p>
+		<ol class="howto">
+			<li><h4>Switch off and take out the card</h4><p>Unplug the Pi's power, remove the microSD card and put it in your computer. It appears as a drive called <strong>TYPING</strong>.</p></li>
+			<li><h4>Download the new <code>kernel8.img</code></h4><p>From the <a data-gh="releases/latest">latest release</a>, download the file called <code>kernel8.img</code>. (<a data-gh="releases/latest/download/kernel8.img">Direct link</a>.)</p></li>
+			<li><h4>Copy it onto the card</h4><p>Copy it onto the TYPING drive, replacing the file with the same name. Eject the card safely, put it back in the Pi and switch on.</p></li>
+		</ol>
+		<div class="note warn"><p><strong>Don't touch the other files</strong> when updating. <code>progress.txt</code> holds every player's progress (<code>progress.txt.bak</code> is the previous copy), and <code>cmdline.txt</code> holds your settings. Flashing a whole new image would erase them. If you ever want to, copy <code>progress.txt</code> off the card first and put it back afterwards.</p></div>
+		<p class="prose">While the card is in your computer, it's a good moment to <strong>back up <code>progress.txt</code></strong>. It's plain text and works on any card with the tutor on it.</p>
+		<p class="prose">To hear about new versions, use <em>Watch → Custom → Releases</em> on the <a data-gh="">GitHub page</a>.</p>
+	</div>
+</section>
+
+<!-- Help ------------------------------------------------------------------>
+<section id="help" class="alt">
+	<div class="wrap">
+		<span class="kicker">Troubleshooting</span>
+		<h2>If something doesn't work</h2>
+		<div class="prose" style="max-width:860px">
+			<details class="faq" open>
+				<summary>"Please plug in a keyboard" stays on the screen</summary>
+				<div>
+					<p>Check the keyboard is plugged into one of the Pi's four USB ports, not the network socket next to them. For a wireless keyboard, plug in its USB receiver and check its batteries and power switch. Bluetooth-only keyboards aren't supported.</p>
+					<p>After about 6 seconds the screen shows a USB log. If the keyboard still isn't found, take a photo of it and include it when <a data-gh="issues">asking for help</a>. Check that <code>usbspeed=full</code> is still in <code>cmdline.txt</code>.</p>
+				</div>
+			</details>
+			<details class="faq">
+				<summary>The screen stays black</summary>
+				<div>
+					<p>Make sure the screen is on the right HDMI input, and that the HDMI cable was connected <em>before</em> the power. Unplug the power, wait a few seconds and plug it in again.</p>
+					<p>Check the card is pushed fully into the slot. Try writing the card again. A red light on the Pi with no green flicker usually means it can't read the card. A weak power supply can also cause problems.</p>
+				</div>
+			</details>
+			<details class="faq">
+				<summary>There's no sound</summary>
+				<div>
+					<p>Press <kbd>F2</kbd>, in case sound was turned off. Then check <code>cmdline.txt</code>: use <code>sounddev=sndpwm</code> for the headphone jack or <code>sounddev=sndhdmi</code> for the screen's speakers, keeping everything on one line.</p>
+				</div>
+			</details>
+			<details class="faq">
+				<summary>The players screen warns that progress can't be saved</summary>
+				<div>
+					<p>The tutor couldn't write to the card. If the card sits in an adapter, check the adapter's small lock switch. Otherwise the card may be worn out: copy <code>progress.txt</code> to a new card set up as above.</p>
+				</div>
+			</details>
+			<details class="faq">
+				<summary>I'd like to see more detail about the hardware</summary>
+				<div>
+					<p><kbd>F12</kbd> opens the system log on any screen. For keyboard problems, each release also includes <code>kernel8-debug.img</code>, which logs extra USB detail. Copy it onto the card and rename it to <code>kernel8.img</code>. To go back, copy the normal <code>kernel8.img</code> over it.</p>
+				</div>
+			</details>
+		</div>
+	</div>
+</section>
+
+<!-- Inside ---------------------------------------------------------------->
+<section id="inside">
+	<div class="wrap">
+		<span class="kicker">For the careful</span>
+		<h2>What's inside, and what isn't</h2>
+		<p class="intro">The goal is a machine that can only ever be a typing tutor. Here is everything on the card:</p>
+		<div class="table-scroll" style="max-width:860px">
+			<table>
+				<thead><tr><th>File</th><th>What it is</th></tr></thead>
+				<tbody>
+					<tr><td><code>kernel8.img</code></td><td>The tutor (about 3 MB, mostly fonts)</td></tr>
+					<tr><td><code>bootcode.bin</code>, <code>start.elf</code>, <code>fixup.dat</code></td><td>Raspberry Pi boot firmware, which every Pi needs, with its licence file <code>LICENCE.broadcom</code></td></tr>
+					<tr><td><code>config.txt</code>, <code>cmdline.txt</code></td><td>Boot settings</td></tr>
+					<tr><td><code>progress.txt</code></td><td>Created on first use: players and their progress, as plain text</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="split" style="margin-top:32px">
+			<div>
+				<h3 style="margin-top:0">Built in</h3>
+				<ul class="checklist">
+					<li>Screen output over HDMI</li>
+					<li>USB keyboards, and nothing else over USB</li>
+					<li>Reading and writing the SD card</li>
+					<li>Sound through the headphone jack or HDMI</li>
+				</ul>
+			</div>
+			<div>
+				<h3 style="margin-top:0">Left out</h3>
+				<ul class="checklist no">
+					<li>Any operating system, shell or console</li>
+					<li>Networking of any kind: no internet code, no Ethernet driver</li>
+					<li>Wi-Fi and Bluetooth: the wireless chip can't do anything until an operating system loads firmware into it, and nothing here does</li>
+					<li>USB storage, mice, gamepads, audio, printers, serial and network adapters. A USB stick plugged in does nothing.</li>
+				</ul>
+			</div>
+		</div>
+		<div class="prose" style="margin-top:26px">
+			<p>The build checks the SHA-256 checksums of the compiler it downloads and of the Pi firmware. Third-party code (the <a href="https://github.com/rsta2/circle">Circle</a> bare-metal library, and HarfBuzz and stb_truetype for Urdu) is pinned to fixed versions and only ever reads the fonts built into the tutor.</p>
+			<p><strong>Limits:</strong> the Pi's boot firmware is closed source and runs before the tutor, as on every Raspberry Pi. Anyone who can reach the Pi can swap the SD card, so physical security is up to you.</p>
+		</div>
+	</div>
+</section>
+
+<!-- Build ----------------------------------------------------------------->
+<section id="build" class="alt">
+	<div class="wrap">
+		<span class="kicker">For developers</span>
+		<h2>Build it yourself</h2>
+		<div class="split">
+			<div>
+				<p>On a Linux PC with <code>make</code>, <code>git</code>, <code>curl</code>, <code>python3</code> (with Pillow and fontTools), <code>sfdisk</code>, <code>mkfs.vfat</code> and <code>mtools</code>. The Arm compiler is downloaded and checksum-verified automatically.</p>
+<pre><code>git clone --recurse-submodules &lt;this repository&gt;
+cd pi-typing
+make          # build/typing-adventure.img and build/sdcard/
+make test     # desktop simulator tests, screenshots in build/shots/
+make qemu     # a variant that runs in QEMU (raspi3b)</code></pre>
+				<p>Pushing a version tag (<code>git tag v1.1 &amp;&amp; git push origin v1.1</code>) builds, tests and publishes a release.</p>
+			</div>
+			<div>
+				<p>The tutor itself (<code>src/core/</code>) has no hardware code. A thin layer (<code>src/pi/</code>) connects it to the Pi through Circle, and a desktop simulator (<code>src/sim/</code>) runs the same code with scripted key presses and writes PNG screenshots. The screenshots on this page are regenerated with <code>scripts/site-screenshots.sh</code>.</p>
+				<p>The <a data-gh="#readme">README</a> covers the code layout, the Arabic and Nastaliq text rendering, and the Circle patches.</p>
+				<div class="buttons"><a class="btn secondary" data-gh="">View the source on GitHub</a></div>
+			</div>
+		</div>
+	</div>
+</section>
+
+</main>
+
+<footer>
+	<div class="wrap">
+		<div><strong style="color:#fff">Typing Adventure</strong> · <span lang="ar">مغامرة الكتابة</span> · <span lang="ur">ٹائپنگ کی مہم</span></div>
+		<div>The tutor is GPL-3.0, as it's built on <a href="https://github.com/rsta2/circle">Circle</a>. Fonts: Andika, Noto Naskh Arabic and Noto Nastaliq Urdu, under the SIL Open Font License. HarfBuzz is MIT-licensed; stb_truetype is public domain. The Raspberry Pi firmware is under Broadcom's redistribution licence. Raspberry Pi is a trademark of Raspberry Pi Ltd; this project isn't affiliated with it.</div>
+		<div><a data-gh="">Source code</a> · <a data-gh="releases">Releases</a> · <a data-gh="issues">Report a problem</a></div>
+	</div>
+</footer>
+
+<dialog id="lightbox" class="lightbox" aria-label="Screenshot">
+	<img src="" alt="">
+	<p></p>
+	<button type="button" class="lb-btn lb-prev" aria-label="Previous screenshot">‹</button>
+	<button type="button" class="lb-btn lb-next" aria-label="Next screenshot">›</button>
+	<button type="button" class="lb-btn lb-close" aria-label="Close">✕</button>
+</dialog>
+
+<script src="site.js"></script>
+</body>
+</html>

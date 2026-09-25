@@ -389,7 +389,9 @@ void App::DrawIntro(Canvas &c)
 		StrId msg = d.kind == curriculum::Review ? S_ReviewIntro
 			    : d.kind == curriculum::Capitals ? S_CapitalsIntro : S_FinalIntro;
 		c.FillRoundRect(140, 110, W - 280, 150, 30, pal::Panel);
-		c.TextCentered(T(msg), font::Title, W / 2, 110, 150, pal::Navy, AlignCenter, rtl);
+		// Long sentences (the English capitals one) don't fit the panel in the title size.
+		font::Size size = text::MeasureUtf8(T(msg), font::Title, rtl) <= W - 280 - 60 ? font::Title : font::Body;
+		c.TextCentered(T(msg), size, W / 2, 110, 150, pal::Navy, AlignCenter, rtl);
 	}
 	int kbY = 305;
 	DrawKeyboard(c, kKbX, kbY, kKbUnit, 0, 0, true);

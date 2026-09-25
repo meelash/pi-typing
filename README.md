@@ -5,6 +5,10 @@ on a **Raspberry Pi 3 B+** with **no operating system**. The SD card holds the
 Pi's boot firmware, two small text files and one program. That program
 drives the screen, keyboard, SD card and sound itself.
 
+The project website, with a tour of every screen, a shopping list and set-up
+instructions, is in [`docs/`](docs/index.html) and published with GitHub Pages
+(Settings → Pages → deploy from the `/docs` folder).
+
 ![Typing lesson](docs/screenshots/typing-en.png)
 
 | Arabic lesson | Urdu lesson (Nastaliq) | Lesson map | Results |
@@ -186,7 +190,8 @@ make qemu     # a variant for QEMU (raspi3b); see scripts/qemu-run.sh
 src/core/      the tutor itself: screens, curriculum, text, graphics (no OS or hardware code)
 src/pi/        the bare-metal kernel: display, USB keyboard, SD card, sound (Circle)
 src/sim/       desktop simulator: scripted key presses, PNG screenshots
-scripts/       font pre-rendering, QEMU helpers
+scripts/       font pre-rendering, QEMU helpers, website screenshots (site-screenshots.sh)
+docs/          the website (index.html, img/) and release notes
 tests/sim/     simulator test scripts
 patches/       changes to Circle (circle-fix-*: every build; circle-debug-*: make debug only)
 boot/          config.txt and cmdline.txt for the card

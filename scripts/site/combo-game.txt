@@ -1,0 +1,34 @@
+# A combo celebration in lesson 1, then Balloon Pop with balloons in the air.
+wait 3000
+key enter
+expect newprofile
+typeas en Maya
+key right
+key right
+key enter
+expect courses
+key enter
+expect map
+key enter
+expect intro
+key enter
+expect typing
+solve 10
+wait 200
+shot combo
+solve
+expect results
+wait 2000
+key esc
+expect map
+key down
+key down
+key down
+key down
+key enter
+expect gameintro
+key enter
+expect game
+pop 3000
+wait 2600
+shot game-balloons

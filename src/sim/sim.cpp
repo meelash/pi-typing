@@ -12,6 +12,7 @@
 //   wait <ms>           advances virtual time
 //   shot <name>         writes <outdir>/<name>.png
 //   expect <screen>     fails if the current screen is different
+//   keyboard <on|off>   whether a keyboard is plugged in (default on)
 #include "../core/app.h"
 #include "../core/sfx.h"
 #include "../core/text.h"
@@ -28,9 +29,10 @@ class SimPlatform : public Platform
 public:
 	u32 now = 0;
 	std::string saveDir;
+	bool keyboard = true;
 	u32 Millis() override { return now; }
 	u32 Random() override { return 12345; }
-	bool KeyboardPresent() override { return true; }
+	bool KeyboardPresent() override { return keyboard; }
 	bool StorageAvailable() override { return true; }
 	int Diagnostics(const char **lines, int max) override
 	{
@@ -252,6 +254,8 @@ int main(int argc, char **argv)
 			std::string p = std::string(argv[2]) + "/" + arg + ".png";
 			WritePng(p.c_str(), pixels, App::W, App::H);
 			printf("shot %s\n", p.c_str());
+		} else if (!strcmp(line, "keyboard")) {
+			plat.keyboard = strcmp(arg, "off") != 0;
 		} else if (!strcmp(line, "expect")) {
 			const char *cur = kScreenNames[app.CurrentScreen()];
 			if (strcmp(cur, arg)) {
