@@ -1,0 +1,72 @@
+# Continues from 01 (Sara has finished English lesson 1).
+wait 3000
+shot 20-profiles
+key right
+key enter
+key tab
+typeas ar ليلى
+shot 21-newprofile-ar
+key enter
+expect courses
+key esc
+expect profiles
+key left
+key delete
+shot 22-delete
+key esc
+key left
+key enter
+key left
+key enter
+expect map
+key down
+key down
+key down
+key down
+expect map
+shot 23-map-game
+key enter
+expect gameintro
+shot 24-gameintro
+key enter
+expect game
+pop 12000
+shot 25-game
+wait 30000
+shot 26-gameover
+key esc
+key right
+key enter
+expect badges
+shot 27-badges
+key esc
+key up
+key enter
+expect intro
+key enter
+typo
+typo
+typo
+solve 20
+typo
+typo
+typo
+typo
+typo
+typo
+typo
+typo
+typo
+typo
+key esc
+shot 28-pause
+key enter
+solve
+expect results
+wait 2500
+shot 29-results-fail
+key f12
+key pgup
+shot 31-diagnostics
+key f12
+expect results

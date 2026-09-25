@@ -1,0 +1,189 @@
+# Typing Adventure · مغامرة الكتابة
+
+A touch-typing tutor for children, in **English and Arabic**, that runs directly
+on a **Raspberry Pi 3 B+** with **no operating system**. The SD card holds the
+Pi's boot firmware, two small text files and one program. That program
+drives the screen, keyboard, SD card and sound itself.
+
+![Typing lesson](docs/screenshots/typing-en.png)
+
+| Arabic lesson | Lesson map | Results |
+|---|---|---|
+| ![Arabic](docs/screenshots/typing-ar.png) | ![Map](docs/screenshots/map.png) | ![Results](docs/screenshots/results.png) |
+
+## What is on the SD card
+
+| File | What it is |
+|---|---|
+| `kernel8.img` | This program (about 2 MB, mostly pre-rendered fonts) |
+| `bootcode.bin`, `start.elf`, `fixup.dat` | Raspberry Pi GPU boot firmware (closed source, required by every Pi) |
+| `LICENCE.broadcom` | Licence for the firmware files |
+| `config.txt`, `cmdline.txt` | Boot settings |
+| `progress.txt` | Created on first use: players and their progress (plain text) |
+
+That's everything. There is no Linux, no shell, no drivers beyond the ones
+listed below, and no device-tree or overlay files.
+
+## Security model
+
+The goal is a machine that can only ever be a typing tutor.
+
+- **No operating system.** The program is built with
+  [Circle](https://github.com/rsta2/circle), a C++ library for bare-metal
+  Raspberry Pi programs. Only the parts it uses are linked in: the HDMI
+  framebuffer, the USB host controller, the USB keyboard driver, the SD-card
+  controller with a FAT filesystem, and HDMI/headphone sound.
+- **No networking code at all.** No TCP/IP stack, no Ethernet driver, no
+  Wi-Fi or Bluetooth driver. The built kernel was checked for these symbols;
+  none are present.
+- **Wi-Fi and Bluetooth stay unused.** The Pi's wireless chip has no firmware of
+  its own. An operating system has to upload firmware into it before it can do
+  anything, and nothing on this card does that. The on-board Ethernet is a USB
+  device with no driver here, so it is ignored.
+- **Only keyboards are accepted over USB.** Every other USB driver class is
+  compiled out: storage, mouse, gamepad, audio, MIDI, serial, printer,
+  touchscreen, network, Bluetooth. A USB stick plugged in does nothing. A device
+  pretending to be a keyboard could only type into the tutor.
+- **No console.** There is no serial output and no debug shell. Log messages
+  stay in memory. They appear on screen only if no keyboard is found or the
+  program stops on an error.
+- **Pinned, checksummed inputs.** The build checks the SHA-256 of the
+  compiler download and of the GPU firmware (`firmware/SHA256SUMS`, taken
+  from the Raspberry Pi firmware revision that Circle is tested with).
+
+Limits worth knowing:
+
+- The GPU firmware (`bootcode.bin`, `start.elf`) is closed source and runs
+  before this program. Every Raspberry Pi needs it.
+- If the Pi 3 B+ cannot boot from the SD card, its boot ROM can try USB and
+  network boot instead. With this card inserted it always boots from the
+  card.
+- Anyone with physical access can swap the SD card. Physical security is up to
+  you.
+
+## Using it
+
+1. Flash `build/typing-adventure.img` to an SD card, using
+   [Raspberry Pi Imager](https://www.raspberrypi.com/software/) ("Use custom")
+   or `dd`. Alternatively, copy the files from `build/sdcard/` onto a card
+   formatted as FAT32.
+2. Put the card in a Pi 3 B+, connect an HDMI screen and a USB keyboard, and
+   power on.
+3. Choose **New player**, type a name (**Tab** switches between English and
+   Arabic letters), and pick a colour with **Left/Right**.
+4. Choose the **English** or **العربية** course and start lesson 1.
+
+Keys: **arrows** move, **Enter** chooses, **Esc** goes back or pauses a lesson,
+**F2** turns sound on or off. On the players screen, **Delete** removes a
+player (after confirming with **Y**). **F12** opens the system log from any
+screen (arrow keys, PgUp/PgDn, Home and End scroll it), for checking hardware.
+
+Several keyboards can be plugged in at once (for example a wired keyboard and
+a wireless receiver), and all of them work.
+
+Up to 8 players can keep separate progress. Progress is saved to the SD card
+after every lesson and game. Saving is crash-safe: the new file is written
+first and the previous one kept as `progress.txt.bak`. If the card can't be
+written, the players screen shows a warning.
+
+**Sound** goes to the headphone jack (`sounddev=sndpwm` in `cmdline.txt`).
+For HDMI speakers use `sounddev=sndhdmi`; for silence, `sounddev=none`. Keep
+everything in `cmdline.txt` on one line.
+
+**USB** runs at full speed (`usbspeed=full` in `cmdline.txt`). Keyboards
+don't need more. Without it, keyboards behind the Pi 3 B+'s built-in hub may
+not be recognised. If a keyboard still isn't found after about 6 seconds,
+the screen shows a USB diagnostic log.
+
+**Keyboard layout.** The program reads raw key positions and applies the US
+English layout or the standard Arabic (101) layout itself. A bilingual
+keyboard with Arabic letters printed on the keys matches the on-screen
+keyboard exactly.
+
+## How the course teaches
+
+Both courses follow the classic touch-typing progression:
+
+1. **Home row first**, starting from the index-finger anchor keys with the
+   bumps: **F J** in English, **ب ت** in Arabic. Then one finger pair at a time
+   out to the little fingers.
+2. **Top row, then bottom row**, two keys at a time by finger. The most frequent
+   letters come first, so real words are available early.
+3. A **review lesson** after each group, then **Shift** (English capitals, or
+   Arabic أ إ آ), **punctuation**, **numbers**, and a **final challenge** of
+   whole sentences.
+
+Every new-key lesson moves from drills of the new keys (`fff jjj fjf`), to
+groups mixed with keys already learned, to **real words that use only letters
+already taught**. Arabic words and sentences are spelled correctly. Words that
+need a hamza form only appear after the hamza lesson, and full stops appear
+only after the punctuation lesson.
+
+During a lesson:
+
+- The on-screen keyboard highlights the **next key** in the colour of the
+  **finger** that should press it, and coloured hands show which finger.
+- Mistakes aren't erased with Backspace: the child presses the right key to
+  continue. This keeps **accuracy first**.
+- Capitals give a gentle tip if the child uses Shift on the same hand as the
+  letter; touch typing uses the opposite hand.
+- Caps Lock being on is pointed out.
+
+A lesson counts as passed at **90% accuracy** (1 star). **95%** earns 2 stars.
+**98%** plus the lesson's target speed (8–18 words per minute) earns 3 stars.
+The results screen lists the keys that caused the most mistakes.
+
+**Game features:** stars, points, combo streaks with celebrations, 13 badges,
+player ranks (Seedling to Grand Master), and **Balloon Pop**, a game that uses
+only the keys learned so far, with letters or words.
+
+![Balloon Pop](docs/screenshots/balloon-pop.png)
+
+## Building
+
+Requirements on a Linux PC: `make`, `git`, `curl`, `python3` with Pillow and
+fontTools, and `sfdisk`, `mkfs.vfat` and `mtools` to build the card image. The
+ARM compiler (Arm GNU Toolchain 15.2) is downloaded into `tools/`
+automatically, and its checksum is verified.
+
+```sh
+git submodule update --init
+make          # builds build/typing-adventure.img and build/sdcard/
+make test     # desktop simulator tests; screenshots in build/shots/
+make qemu     # a variant for QEMU (raspi3b); see scripts/qemu-run.sh
+```
+
+### Layout
+
+```
+src/core/      the tutor itself: screens, curriculum, text, graphics (no OS or hardware code)
+src/pi/        the bare-metal kernel: display, USB keyboard, SD card, sound (Circle)
+src/sim/       desktop simulator: scripted key presses, PNG screenshots
+scripts/       font pre-rendering, QEMU helpers
+tests/sim/     simulator test scripts
+patches/       changes to Circle (circle-fix-*: every build; circle-debug-*: make debug only)
+boot/          config.txt and cmdline.txt for the card
+firmware/      checksums of the Raspberry Pi boot firmware
+assets/fonts/  Andika (Latin, designed for early readers) and Noto Naskh Arabic
+external/      Circle (git submodule, pinned to release Step51.1, kept unmodified)
+```
+
+The build never changes `external/circle`. Each variant (Pi, QEMU, debug)
+builds its own copy with the patches applied. The one fix so far keeps a
+USB device that has no driver (such as the Pi's own Ethernet chip) enumerated
+and unused, instead of dropping it. Dropping it freed its USB address while
+the device still answered there, so a keyboard plugged in later could get the
+same address and neither would work.
+
+The fonts are pre-rendered to anti-aliased bitmaps when you build
+(`scripts/gen_fonts.py`), so the Pi needs no font engine. Arabic letter joining,
+the lam-alef ligature and right-to-left layout are handled in
+`src/core/text.cpp`.
+
+## Licences
+
+- Circle is GPL-3.0, so the built `kernel8.img` is GPL-3.0 as a combined work.
+- Andika and Noto Naskh Arabic are under the SIL Open Font License 1.1
+  (`assets/fonts/`).
+- The Raspberry Pi firmware is under Broadcom's redistribution licence
+  (`LICENCE.broadcom`).

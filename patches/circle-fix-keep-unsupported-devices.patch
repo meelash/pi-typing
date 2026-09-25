@@ -1,0 +1,64 @@
+diff --git a/include/circle/usb/usbdevice.h b/include/circle/usb/usbdevice.h
+index d188be66..fed4e4b5 100644
+--- a/include/circle/usb/usbdevice.h
++++ b/include/circle/usb/usbdevice.h
+@@ -123,6 +123,8 @@ private:
+ 
+ 	CUSBConfigurationParser *m_pConfigParser;
+ 
++	boolean m_bIdle;	// enumerated, but no driver: kept to hold its address
++
+ 	CUSBFunction *m_pFunction[USBDEV_MAX_FUNCTIONS];
+ 
+ #if RASPPI >= 4
+diff --git a/lib/usb/usbdevice.cpp b/lib/usb/usbdevice.cpp
+index dbc710c3..ba50dd2f 100644
+--- a/lib/usb/usbdevice.cpp
++++ b/lib/usb/usbdevice.cpp
+@@ -51,7 +51,8 @@ CUSBDevice::CUSBDevice (CUSBHostController *pHost, TUSBSpeed Speed, CUSBHCIRootP
+ 	m_pTTHubDevice (0),
+ 	m_pDeviceDesc (0),
+ 	m_pConfigDesc (0),
+-	m_pConfigParser (0)
++	m_pConfigParser (0),
++	m_bIdle (FALSE)
+ {
+ 	assert (m_pHost != 0);
+ 	assert (m_pRootPort != 0);
+@@ -82,7 +83,8 @@ CUSBDevice::CUSBDevice (CUSBHostController *pHost, TUSBSpeed Speed,
+ 	m_pEndpoint0 (0),
+ 	m_pDeviceDesc (0),
+ 	m_pConfigDesc (0),
+-	m_pConfigParser (0)
++	m_pConfigParser (0),
++	m_bIdle (FALSE)
+ {
+ 	assert (m_pHost != 0);
+ 	assert (m_pHub != 0);
+@@ -490,7 +492,13 @@ boolean CUSBDevice::Initialize (void)
+ 			LogWrite (LogWarning, "Cannot reset configuration");
+ 		}
+ 
+-		return FALSE;
++		// Keep the device (unconfigured) instead of deleting it. Deleting it
++		// would free its address number while the device still answers at that
++		// address, so the next device could get the same address and both would
++		// reply at once. It would also be re-enumerated on every hub scan.
++		m_bIdle = TRUE;
++
++		return TRUE;
+ 	}
+ 
+ 	return TRUE;
+@@ -506,6 +514,11 @@ boolean CUSBDevice::Configure (void)
+ 		return FALSE;
+ 	}
+ 
++	if (m_bIdle)			// no driver: nothing to configure
++	{
++		return TRUE;
++	}
++
+ 	boolean bResult = FALSE;
+ 	
+ 	for (unsigned nFunction = 0; nFunction < USBDEV_MAX_FUNCTIONS; nFunction++)

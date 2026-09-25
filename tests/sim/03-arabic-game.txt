@@ -1,0 +1,38 @@
+# Continues from 02 (two players). Arabic course: finish lesson 1, then lose a Balloon Pop game (checks Arabic digits in the large font).
+wait 3000
+key right
+key right
+key enter
+expect newprofile
+key tab
+typeas ar سارة
+key enter
+expect courses
+key enter
+expect map
+key enter
+key enter
+solve
+expect results
+wait 1500
+key esc
+expect map
+key right
+key right
+key right
+key right
+key right
+key right
+key down
+key down
+key down
+key down
+expect map
+key enter
+expect gameintro
+key enter
+expect game
+pop 4000
+wait 40000
+expect game
+shot 30-gameover-ar

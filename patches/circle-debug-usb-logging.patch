@@ -1,0 +1,68 @@
+diff --git a/lib/usb/dwhcidevice.cpp b/lib/usb/dwhcidevice.cpp
+index 66033b48..0e73f730 100644
+--- a/lib/usb/dwhcidevice.cpp
++++ b/lib/usb/dwhcidevice.cpp
+@@ -1823,8 +1823,7 @@ boolean CDWHCIDevice::WaitForBit (CDWHCIRegister *pRegister,
+ 
+ void CDWHCIDevice::LogTransactionFailed (u32 nStatus)
+ {
+-	if (   CurrentExecutionLevel () < FIQ_LEVEL
+-	    && (nStatus & (DWHCI_HOST_CHAN_INT_AHB_ERROR | DWHCI_HOST_CHAN_INT_STALL)))
++	if (CurrentExecutionLevel () < FIQ_LEVEL)	// USB debug: log all errors
+ 	{
+ 		LOGWARN ("Transaction failed (status 0x%X)", nStatus);
+ 	}
+diff --git a/lib/usb/usbdevice.cpp b/lib/usb/usbdevice.cpp
+index dbc710c3..82506f16 100644
+--- a/lib/usb/usbdevice.cpp
++++ b/lib/usb/usbdevice.cpp
+@@ -232,9 +232,12 @@ boolean CUSBDevice::Initialize (void)
+ 		return FALSE;
+ 	}
+ 
+-#ifndef NDEBUG
+-	//debug_hexdump (m_pDeviceDesc, sizeof *m_pDeviceDesc, FromDevice);
+-#endif
++	{	// USB debug: raw device descriptor
++		const u8 *p = (const u8 *) m_pDeviceDesc;
++		LogWrite (LogNotice, "devdesc %02X %02X %02X%02X %02X %02X %02X %02X %02X%02X %02X%02X %02X%02X %02X %02X %02X %02X",
++			  p[0], p[1], p[3], p[2], p[4], p[5], p[6], p[7], p[9], p[8], p[11], p[10],
++			  p[13], p[12], p[14], p[15], p[16], p[17]);
++	}
+ 
+ #if RASPPI <= 3
+ 	unsigned nAddress = s_DeviceAddressPool.AllocateNumber (FALSE);
+diff --git a/lib/usb/usbhostcontroller.cpp b/lib/usb/usbhostcontroller.cpp
+index 5fa62c59..841d9318 100644
+--- a/lib/usb/usbhostcontroller.cpp
++++ b/lib/usb/usbhostcontroller.cpp
+@@ -18,6 +18,8 @@
+ // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ //
+ #include <circle/usb/usbhostcontroller.h>
++#include <circle/usb/usbdevice.h>
++#include <circle/logger.h>
+ #include <circle/usb/usbhcirootport.h>
+ #include <circle/usb/usbstandardhub.h>
+ #include <circle/timer.h>
+@@ -121,6 +123,20 @@ int CUSBHostController::ControlMessage (CUSBEndpoint *pEndpoint,
+ 		assert (pEndpoint != 0);
+ 		pEndpoint->ResetPID ();
+ 	}
++
++	// USB debug: report failed or short control requests.
++	if (nResult < 0 || ((ucRequestType & REQUEST_IN) && nResult != (int) usDataSize))
++	{
++		CUSBDevice *pDevice = pEndpoint->GetDevice ();
++		CLogger::Get ()->Write ("usbdbg", LogNotice,
++			"ctl adr%u spd%u mps%u req %02X %02X %04X %04X len%u -> %s res%d err%u",
++			pDevice ? (unsigned) pDevice->GetAddress () : 99u,
++			pDevice ? (unsigned) pDevice->GetSpeed () : 9u,
++			(unsigned) pEndpoint->GetMaxPacketSize (),
++			(unsigned) ucRequestType, (unsigned) ucRequest, (unsigned) usValue,
++			(unsigned) usIndex, (unsigned) usDataSize,
++			nResult < 0 ? "FAIL" : "SHORT", nResult, (unsigned) URB.GetUSBError ());
++	}
+ 	
+ 	delete pSetup;
+ 

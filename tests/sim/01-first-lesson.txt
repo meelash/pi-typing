@@ -1,0 +1,45 @@
+# New player, first English lesson, then the Arabic course.
+shot 01-splash
+wait 3000
+expect profiles
+shot 02-profiles-empty
+key enter
+expect newprofile
+typeas en Sara
+key right
+shot 03-newprofile
+key enter
+expect courses
+shot 04-courses
+key enter
+expect map
+shot 05-map
+key enter
+expect intro
+wait 700
+shot 06-intro
+key enter
+expect typing
+solve 7
+typo
+shot 07-typing
+solve
+expect results
+wait 2000
+shot 08-results
+key enter
+expect intro
+key esc
+expect map
+key esc
+key right
+shot 09-courses-ar
+key enter
+expect map
+shot 10-map-ar
+key enter
+wait 1300
+shot 11-intro-ar
+key enter
+solve 12
+shot 12-typing-ar
