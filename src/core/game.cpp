@@ -20,6 +20,30 @@ int App::GameScore() const
 	return beaten * m_pool.letters.n * (m_gameWords ? 2 : 1);
 }
 
+void App::GameScoreLine(char *out, int cap) const
+{
+	char num[16];
+	int top = -1;
+	for (int i = 0; i < m_store.count; i++)
+		if (top < 0 || m_store.players[i].course[m_lang].gameBest > m_store.players[top].course[m_lang].gameBest)
+			top = i;
+	out[0] = 0;
+	StrAppend(out, T(S_YourBestScore), cap);
+	StrAppend(out, ": ", cap);
+	FormatNum(num, sizeof num, m_store.players[m_player].course[m_lang].gameBest);
+	StrAppend(out, num, cap);
+	if (m_store.count < 2 || m_store.players[top].course[m_lang].gameBest == 0)
+		return;
+	StrAppend(out, "    ", cap);
+	StrAppend(out, T(S_TopScore), cap);
+	StrAppend(out, ": ", cap);
+	FormatNum(num, sizeof num, m_store.players[top].course[m_lang].gameBest);
+	StrAppend(out, num, cap);
+	StrAppend(out, " (", cap);
+	StrAppend(out, m_store.players[top].name, cap);
+	StrAppend(out, ")", cap);
+}
+
 void App::KeyGameIntro(const KeyEvent &e)
 {
 	switch (e.usage) {
@@ -83,7 +107,7 @@ void App::StartGame()
 	m_lock = -1;
 	m_spawnMs = 600;
 	m_gameOver = false;
-	m_gameRecord = false;
+	m_gameRecord = m_gameTopRecord = false;
 	m_newBadges = 0;
 	m_levelBannerUntil = m_now + 1200;
 	Go(ScrGame);
@@ -268,13 +292,17 @@ void App::EndGame()
 	m_gameRecord = beaten > best;
 	if (m_gameRecord)
 		best = (u8)Min(beaten, 255);
+	u32 top = 0;
+	for (int i = 0; i < m_store.count; i++)
+		top = Max(top, m_store.players[i].course[m_lang].gameBest);
+	m_gameTopRecord = m_store.count > 1 && (u32)m_score > top;
 	cp.gameBest = Max(cp.gameBest, (u32)m_score);
 	p.points += (u32)m_score;
 	u32 before = p.badges;
 	AwardBadges(before);
 	Save();
-	if (m_gameRecord)
-		for (int i = 0; i < 5; i++)
+	if (m_gameRecord || m_gameTopRecord)
+		for (int i = 0; i < (m_gameTopRecord ? 9 : 5); i++)
 			Burst(300 + m_rng.Below(W - 600), 200 + m_rng.Below(150), pal::Avatar[m_rng.Below(8)], 20);
 	m_screenStart = m_now;
 }
@@ -343,7 +371,7 @@ void App::DrawGameIntro(Canvas &c)
 	StrAppend(buf, " ", sizeof buf);
 	FormatNum(num, sizeof num, (u32)m_startLevel);
 	StrAppend(buf, num, sizeof buf);
-	int pw = 420, px = W / 2 - pw / 2, py = 492;
+	int pw = 420, px = W / 2 - pw / 2, py = 480;
 	c.FillRoundRect(px, py, pw, 60, 30, 0xFFF1F3F8);
 	c.TextCentered(buf, font::Body, W / 2 - 20, py, 60, pal::Navy, AlignCenter, rtl);
 	int ax = rtl ? px + 36 : px + pw - 36;
@@ -358,7 +386,9 @@ void App::DrawGameIntro(Canvas &c)
 	StrAppend(buf, ": ", sizeof buf);
 	FormatNum(num, sizeof num, (u32)GameBestLevel());
 	StrAppend(buf, num, sizeof buf);
-	c.TextCentered(buf, font::Body, W / 2, 568, 50, pal::InkSoft, AlignCenter, rtl);
+	c.TextCentered(buf, font::Body, W / 2, 546, 44, pal::InkSoft, AlignCenter, rtl);
+	GameScoreLine(buf, sizeof buf);
+	c.TextCentered(buf, font::Body, W / 2, 594, 44, pal::InkSoft, AlignCenter, rtl);
 	DrawHint(c, T(S_GameModeHint));
 }
 
@@ -426,7 +456,7 @@ void App::DrawGame(Canvas &c)
 	}
 	if (m_gameOver) {
 		c.FillRect(0, 0, W, H, 0x80202848);
-		int py = 110, ph = 500;
+		int py = 110, ph = 540;
 		c.FillRoundRect(W / 2 - 330, py, 660, ph, 36, pal::Panel);
 		c.TextCentered(T(S_GameOver), font::Type, W / 2, py + 15, 90, pal::Navy, AlignCenter, rtl);
 		FormatNum(num, sizeof num, (u32)m_score);
@@ -459,15 +489,22 @@ void App::DrawGame(Canvas &c)
 		}
 		c.TextCentered(buf, m_gameRecord ? font::Title : font::Body, W / 2, py + 280, 50,
 			       m_gameRecord ? pal::Good : pal::InkSoft, AlignCenter, rtl);
+		// Personal best score and the top score of all players in this course.
+		if (m_gameTopRecord)
+			c.TextCentered(T(S_NewTopScore), font::Title, W / 2, py + 330, 50, pal::Accent, AlignCenter, rtl);
+		else {
+			GameScoreLine(buf, sizeof buf);
+			c.TextCentered(buf, font::Body, W / 2, py + 330, 50, pal::InkSoft, AlignCenter, rtl);
+		}
 		if (m_newBadges) {
 			int count = 0;
 			for (int b = 0; b < B_Count; b++)
 				count += (m_newBadges >> b) & 1;
-			c.TextCentered(T(S_NewBadge), font::Body, W / 2, py + 336, 40, pal::Accent, AlignCenter, rtl);
+			c.TextCentered(T(S_NewBadge), font::Body, W / 2, py + 372, 40, pal::Accent, AlignCenter, rtl);
 			int x = W / 2 - (count - 1) * 40;
 			for (int b = 0; b < B_Count; b++)
 				if ((m_newBadges >> b) & 1) {
-					DrawMedal(c, x, py + 408, 28, b, true);
+					DrawMedal(c, x, py + 432, 28, b, true);
 					x += 80;
 				}
 		}

@@ -161,7 +161,8 @@ faster than the last. The score is **levels cleared × letters in play**
 scores more than one playing only F and J. Each set of letters keeps its own
 best level. **Up/Down** on the game's start screen picks the starting level,
 up to one past the best level cleared with those letters. Skipped levels
-count as cleared.
+count as cleared. The game also shows the player's best score and the top
+score of all players in that course, with the record holder's name.
 
 ![Balloon Pop](docs/screenshots/balloon-pop.png)
 

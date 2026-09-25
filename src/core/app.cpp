@@ -920,13 +920,8 @@ void App::DrawMap(Canvas &c)
 			char info[192] = "";
 			if (p.Completed(m_lang) == 0)
 				StrCopy(info, T(S_GameLocked), sizeof info);
-			else {
-				char num[16];
-				StrAppend(info, T(S_Best), sizeof info);
-				StrAppend(info, ": ", sizeof info);
-				FormatNum(num, sizeof num, p.course[m_lang].gameBest);
-				StrAppend(info, num, sizeof info);
-			}
+			else
+				GameScoreLine(info, sizeof info);
 			c.Text(info, font::Small, tx, py + 68, pal::InkSoft, al, rtl);
 		}
 	}

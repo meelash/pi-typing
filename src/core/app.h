@@ -118,6 +118,8 @@ private:
 	// skills that matter rather than with time spent on a few easy keys.
 	int GameScore() const;
 	int GameBestLevel() const;  // best level beaten with this letter set and mode
+	// "Your best score: X    Top score: Y (name)", the top over all players, in this course.
+	void GameScoreLine(char *out, int cap) const;
 	int GameMaxStart() const { return Min(GameBestLevel() + 1, kMaxStartLevel); }
 
 	Platform *m_platform;
@@ -198,7 +200,7 @@ private:
 	Balloon m_balloons[kMaxBalloons];
 	Particle m_particles[kMaxParticles];
 	Cloud m_clouds[kClouds];
-	bool m_gameWords, m_gameOver, m_gameRecord;
+	bool m_gameWords, m_gameOver, m_gameRecord, m_gameTopRecord;
 	int m_score, m_lives, m_level, m_levelPops, m_lock;
 	int m_startLevel;  // chosen on the intro screen; levels below it count as beaten
 	int m_spawnMs;
