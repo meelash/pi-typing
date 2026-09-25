@@ -63,6 +63,14 @@ Limits worth knowing:
 
 ## Using it
 
+Ready-made downloads are on the repository's **Releases** page. Pushing a
+version tag (`git tag v1.0 && git push origin v1.0`) builds, tests and
+publishes a release named after the tag (`.github/workflows/release.yml`). Each release includes a flashable image,
+the card files, a `kernel8.img` for updating an existing card, and install
+instructions (from `docs/release-notes.md`).
+
+To build it yourself:
+
 1. Flash `build/typing-adventure.img` to an SD card, using
    [Raspberry Pi Imager](https://www.raspberrypi.com/software/) ("Use custom")
    or `dd`. Alternatively, copy the files from `build/sdcard/` onto a card

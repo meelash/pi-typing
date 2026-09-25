@@ -1,0 +1,65 @@
+# Builds, tests and publishes a release when a version tag is pushed:
+#   git tag v1.0 && git push origin v1.0
+# Release assets: SD card image, card files, kernel8.img (for updates) and a
+# debug kernel. The instructions come from docs/release-notes.md.
+name: Build and release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-pil python3-fonttools zlib1g-dev fdisk dosfstools mtools xz-utils zip
+
+      # The Arm toolchain (~150 MB) is downloaded by the Makefile into tools/.
+      - name: Toolchain name
+        id: toolchain
+        run: echo "name=$(sed -n 's/^TC_NAME *:= *//p' Makefile)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.toolchain.outputs.name }}
+
+      - name: Simulator tests
+        run: make test
+
+      - name: Build SD card image
+        run: make
+
+      - name: Build debug kernel
+        run: make debug
+
+      - name: Package
+        id: package
+        run: |
+          version="${{ github.ref_name }}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          scripts/package-release.sh "$version"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.package.outputs.version }}" build/release/* \
+            --verify-tag \
+            --title "Typing Adventure ${{ steps.package.outputs.version }}" \
+            --notes-file build/release-notes.md

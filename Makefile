@@ -84,6 +84,7 @@ $(BUILD)/circle-debug.stamp: $(TC_PREFIX)gcc $(CIRCLE)/Rules.mk $(DBG_PATCHES)
 
 # --- kernel ----------------------------------------------------------------
 kernel: $(BUILD)/circle-pi.stamp
+	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-pi BUILD=$(BUILD)/pi
 	mkdir -p $(BUILD)/sdcard
 	cp src/pi/kernel8.img $(BUILD)/sdcard/
@@ -121,6 +122,7 @@ test:
 
 # QEMU needs Circle built with --qemu (different SD card controller).
 qemu: $(BUILD)/circle-qemu.stamp
+	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-qemu BUILD=$(BUILD)/qemu-obj
 	mkdir -p $(BUILD)/qemu && mv src/pi/kernel8.img $(BUILD)/qemu/
 	[ -f $(BUILD)/qemu/sd.img ] || { truncate -s 64M $(BUILD)/qemu/sd.img && \
@@ -130,6 +132,7 @@ qemu: $(BUILD)/circle-qemu.stamp
 
 # Same as the Pi kernel, plus the USB logging patches and debug-level logging.
 debug: $(BUILD)/circle-debug.stamp
+	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-debug BUILD=$(BUILD)/debug-obj EXTRA_DEFINES=-DDIAG_LOG_LEVEL=LogDebug
 	mkdir -p $(BUILD)/debug && mv src/pi/kernel8.img $(BUILD)/debug/
 	@echo "Debug kernel: build/debug/kernel8.img (replace kernel8.img on the card)"
