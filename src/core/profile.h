@@ -12,6 +12,9 @@ struct CourseProgress
 	u8 stars[curriculum::kMaxLessons];
 	u8 bestAcc[curriculum::kMaxLessons];
 	u8 bestWpm[curriculum::kMaxLessons];
+	// Balloon Pop: best level beaten with each letter set ([0] letters, [1] words),
+	// indexed by curriculum::GamePool::stage, and the best score overall.
+	u8 gameLevel[2][curriculum::kMaxLessons];
 	u32 gameBest;
 };
 

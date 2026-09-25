@@ -481,6 +481,14 @@ void Generate(Lang lang, int lesson, u32 seed, Exercise *out)
 void BuildGamePool(Lang lang, int lessonsDone, GamePool *out)
 {
 	int lesson = Clamp(lessonsDone - 1, 0, Count(lang) - 1);
+	out->stage = 0;
+	for (int i = 0; i <= lesson; i++) {
+		CharSet s;
+		NewChars(lang, i, &s);
+		for (int k = 0; k < s.n; k++)
+			if (IsLetter(s.cps[k]))
+				out->stage = i;
+	}
 	CharSet allowed;
 	Allowed(lang, lesson, &allowed);
 	out->letters.n = 0;

@@ -135,8 +135,10 @@ int Store::Serialize(char *buf, int cap) const
 			w.List(kLangKey[l], "stars", c.stars, n);
 			w.List(kLangKey[l], "acc", c.bestAcc, n);
 			w.List(kLangKey[l], "wpm", c.bestWpm, n);
+			w.List(kLangKey[l], "balloon", c.gameLevel[0], n);
+			w.List(kLangKey[l], "balloonw", c.gameLevel[1], n);
 			w.Put(kLangKey[l]);
-			w.Field("game", c.gameBest);
+			w.Field("balloonscore", c.gameBest);
 		}
 	}
 	return w.ok ? w.len : -1;
@@ -213,8 +215,13 @@ bool Store::Parse(const char *buf, int len)
 					ParseList(val, c.bestAcc, curriculum::kMaxLessons);
 				else if (StrEq(k, "wpm"))
 					ParseList(val, c.bestWpm, curriculum::kMaxLessons);
-				else if (StrEq(k, "game") && num)
+				else if (StrEq(k, "balloon"))
+					ParseList(val, c.gameLevel[0], curriculum::kMaxLessons);
+				else if (StrEq(k, "balloonw"))
+					ParseList(val, c.gameLevel[1], curriculum::kMaxLessons);
+				else if (StrEq(k, "balloonscore") && num)
 					c.gameBest = v;
+				// "game" (the old points-based record) is dropped: it used another scale.
 			}
 	}
 	return header;

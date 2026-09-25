@@ -9,6 +9,17 @@ static const int kSkyBottom = 660;
 static const Color kBalloonColors[] = {0xFFFF6B6B, 0xFFFFA94D, 0xFFFCC419, 0xFF51CF66,
 				       0xFF339AF0, 0xFF845EF7, 0xFFF06595, 0xFF20C997};
 
+int App::GameBestLevel() const
+{
+	return m_store.players[m_player].course[m_lang].gameLevel[m_gameWords][m_pool.stage];
+}
+
+int App::GameScore() const
+{
+	int beaten = m_level - 1;
+	return beaten * m_pool.letters.n * (m_gameWords ? 2 : 1);
+}
+
 void App::KeyGameIntro(const KeyEvent &e)
 {
 	switch (e.usage) {
@@ -17,9 +28,17 @@ void App::KeyGameIntro(const KeyEvent &e)
 	case KeyRight:
 		if (m_pool.wordCount >= 8) {
 			m_gameWords = !m_gameWords;
+			m_startLevel = Min(m_startLevel, GameMaxStart());
 			sfx::Trigger(SfxMove);
 		}
 		break;
+	case KeyUp:
+	case KeyDown: {
+		int old = m_startLevel;
+		m_startLevel = Clamp(m_startLevel + (e.usage == KeyUp ? 1 : -1), 1, GameMaxStart());
+		sfx::Trigger(m_startLevel != old ? SfxMove : SfxError);
+		break;
+	}
 	case KeyEnter:
 	case KeyPadEnter:
 	case KeySpace:
@@ -57,9 +76,10 @@ void App::StartGame()
 		m_balloons[i].alive = false;
 	for (int i = 0; i < kMaxParticles; i++)
 		m_particles[i].life = 0;
-	m_score = m_pops = 0;
+	m_levelPops = 0;
 	m_lives = 3;
-	m_level = 1;
+	m_level = m_startLevel;
+	m_score = GameScore();
 	m_lock = -1;
 	m_spawnMs = 600;
 	m_gameOver = false;
@@ -129,12 +149,12 @@ void App::GameType(u32 cp)
 	// Pop!
 	b.alive = false;
 	m_lock = -1;
-	m_score += 5 * b.len + 5 * m_level;
-	m_pops++;
 	Burst((int)b.x, (int)b.y, b.color, 26);
 	sfx::Trigger(SfxPop);
-	if (m_pops % 10 == 0) {
+	if (++m_levelPops == kPopsPerLevel) {
+		m_levelPops = 0;
 		m_level++;
+		m_score = GameScore();
 		m_levelBannerUntil = m_now + 1200;
 		sfx::Trigger(SfxLevelUp);
 	}
@@ -242,10 +262,14 @@ void App::EndGame()
 	m_gameOver = true;
 	Profile &p = Player();
 	CourseProgress &cp = p.course[m_lang];
-	m_gameRecord = (u32)m_score > cp.gameBest && m_score > 0;
+	// A record is per letter set: beating your own best level with these keys.
+	u8 &best = cp.gameLevel[m_gameWords][m_pool.stage];
+	int beaten = m_level - 1;
+	m_gameRecord = beaten > best;
 	if (m_gameRecord)
-		cp.gameBest = (u32)m_score;
-	p.points += (u32)m_score / 2;
+		best = (u8)Min(beaten, 255);
+	cp.gameBest = Max(cp.gameBest, (u32)m_score);
+	p.points += (u32)m_score;
 	u32 before = p.badges;
 	AwardBadges(before);
 	Save();
@@ -283,14 +307,14 @@ void App::DrawGameIntro(Canvas &c)
 {
 	DrawSky(c, m_clouds, kClouds, m_now);
 	bool rtl = Rtl();
-	c.FillRoundRect(190, 70, W - 380, 540, 36, 0xF0FFFFFF);
-	c.TextCentered(T(S_BalloonGame), font::Type, W / 2, 90, 80, pal::Navy, AlignCenter, rtl);
+	c.FillRoundRect(190, 56, W - 380, 600, 36, 0xF0FFFFFF);
+	c.TextCentered(T(S_BalloonGame), font::Type, W / 2, 70, 80, pal::Navy, AlignCenter, rtl);
 	// Demo balloons
 	for (int i = 0; i < 3; i++) {
 		int bx = W / 2 + (i - 1) * 150;
-		int by = 250 + ISin((int)(m_now / 3 + i * 300) & 1023) * 12 / 1024;
+		int by = 228 + ISin((int)(m_now / 3 + i * 300) & 1023) * 12 / 1024;
 		Color col = kBalloonColors[(i * 3) % ARRAY_LEN(kBalloonColors)];
-		c.Line(bx, by + 55, bx + 6, by + 120, 3, 0xFF8C93A8);
+		c.Line(bx, by + 55, bx + 6, by + 110, 3, 0xFF8C93A8);
 		c.FillEllipse(bx, by, 48, 58, col);
 		c.FillEllipse(bx - 16, by - 20, 10, 16, 0x70FFFFFF);
 		if (m_pool.letters.n) {
@@ -300,24 +324,41 @@ void App::DrawGameIntro(Canvas &c)
 			c.TextCentered(s, font::Type, bx, by - 58, 110, 0xFFFFFFFF, AlignCenter, rtl);
 		}
 	}
-	c.TextCentered(T(m_gameWords ? S_GameIntroWords : S_GameIntroLetters), font::Body, W / 2, 390, 50, pal::Ink,
+	c.TextCentered(T(m_gameWords ? S_GameIntroWords : S_GameIntroLetters), font::Body, W / 2, 350, 50, pal::Ink,
 		       AlignCenter, rtl);
 	// Mode switch
 	bool wordsOk = m_pool.wordCount >= 8;
 	for (int i = 0; i < 2; i++) {
 		bool on = (i == 1) == m_gameWords;
-		int bx = W / 2 + (rtl ? (i == 0 ? 20 : -220) : (i == 0 ? -220 : 20)), by = 460;
+		int bx = W / 2 + (rtl ? (i == 0 ? 20 : -220) : (i == 0 ? -220 : 20)), by = 415;
 		Color col = on ? pal::Accent : (i == 1 && !wordsOk ? 0xFFE9EBF2 : 0xFFF1F3F8);
 		c.FillRoundRect(bx, by, 200, 56, 28, col);
 		c.TextCentered(T(i == 0 ? S_Letters : S_Words), font::Body, bx + 100, by, 56,
 			       on ? 0xFFFFFFFF : (i == 1 && !wordsOk ? pal::Faint : pal::Ink), AlignCenter, rtl);
 	}
-	char buf[64] = "", num[16];
-	StrAppend(buf, T(S_Best), sizeof buf);
-	StrAppend(buf, ": ", sizeof buf);
-	FormatNum(num, sizeof num, Player().course[m_lang].gameBest);
+	// Start level: Up / Down, up to one past the best level beaten with these letters.
+	char buf[96], num[16];
+	buf[0] = 0;
+	StrAppend(buf, T(S_StartLevel), sizeof buf);
+	StrAppend(buf, " ", sizeof buf);
+	FormatNum(num, sizeof num, (u32)m_startLevel);
 	StrAppend(buf, num, sizeof buf);
-	c.TextCentered(buf, font::Body, W / 2, 540, 50, pal::InkSoft, AlignCenter, rtl);
+	int pw = 420, px = W / 2 - pw / 2, py = 492;
+	c.FillRoundRect(px, py, pw, 60, 30, 0xFFF1F3F8);
+	c.TextCentered(buf, font::Body, W / 2 - 20, py, 60, pal::Navy, AlignCenter, rtl);
+	int ax = rtl ? px + 36 : px + pw - 36;
+	bool canUp = m_startLevel < GameMaxStart(), canDown = m_startLevel > 1;
+	Point up[3] = {{ax - 11, py + 25}, {ax + 11, py + 25}, {ax, py + 11}};
+	Point down[3] = {{ax - 11, py + 35}, {ax + 11, py + 35}, {ax, py + 49}};
+	c.FillPolygon(up, 3, canUp ? pal::Accent : 0xFFD5D9E6);
+	c.FillPolygon(down, 3, canDown ? pal::Accent : 0xFFD5D9E6);
+	// Record for this letter set and mode.
+	buf[0] = 0;
+	StrAppend(buf, T(S_BestWithLetters), sizeof buf);
+	StrAppend(buf, ": ", sizeof buf);
+	FormatNum(num, sizeof num, (u32)GameBestLevel());
+	StrAppend(buf, num, sizeof buf);
+	c.TextCentered(buf, font::Body, W / 2, 568, 50, pal::InkSoft, AlignCenter, rtl);
 	DrawHint(c, T(S_GameModeHint));
 }
 
@@ -369,7 +410,12 @@ void App::DrawGame(Canvas &c)
 	FormatNum(num, sizeof num, (u32)m_level);
 	StrAppend(buf, num, sizeof buf);
 	c.FillRoundRect(W / 2 - 110, 16, 220, 60, 30, 0xC0FFFFFF);
-	c.TextCentered(buf, font::Body, W / 2, 16, 60, pal::Navy, AlignCenter, rtl);
+	c.TextCentered(buf, font::Body, W / 2, 12, 56, pal::Navy, AlignCenter, rtl);
+	// Progress towards the next level.
+	for (int i = 0; i < kPopsPerLevel; i++) {
+		int dx = (i - kPopsPerLevel / 2) * 16 + 8;
+		c.FillCircle(W / 2 + (rtl ? -dx : dx), 64, 5, i < m_levelPops ? pal::Accent : 0xFFD5D9E6);
+	}
 	c.FillRoundRect(W - 230, 16, 210, 60, 30, 0xC0FFFFFF);
 	for (int i = 0; i < 3; i++)
 		c.FillHeart(W - 175 + i * 55, 46, 40, i < m_lives ? pal::Bad : 0xFFD5D9E6);
@@ -385,26 +431,43 @@ void App::DrawGame(Canvas &c)
 		c.TextCentered(T(S_GameOver), font::Type, W / 2, py + 15, 90, pal::Navy, AlignCenter, rtl);
 		FormatNum(num, sizeof num, (u32)m_score);
 		c.TextCentered(num, font::Huge, W / 2, py + 105, 140, pal::Accent, AlignCenter, rtl);
+		// How the score was made: levels x letters (x 2 for words).
+		buf[0] = 0;
+		StrAppend(buf, T(S_LevelsBeaten), sizeof buf);
+		StrAppend(buf, " ", sizeof buf);
+		FormatNum(num, sizeof num, (u32)(m_level - 1));
+		StrAppend(buf, num, sizeof buf);
+		StrAppend(buf, "  ×  ", sizeof buf);
+		StrAppend(buf, T(S_Letters), sizeof buf);
+		StrAppend(buf, " ", sizeof buf);
+		FormatNum(num, sizeof num, (u32)m_pool.letters.n);
+		StrAppend(buf, num, sizeof buf);
+		if (m_gameWords) {
+			StrAppend(buf, "  ×  ", sizeof buf);
+			FormatNum(num, sizeof num, 2);
+			StrAppend(buf, num, sizeof buf);
+		}
+		c.TextCentered(buf, font::Body, W / 2, py + 238, 44, pal::InkSoft, AlignCenter, rtl);
 		buf[0] = 0;
 		if (m_gameRecord)
 			StrAppend(buf, T(S_NewRecord), sizeof buf);
 		else {
-			StrAppend(buf, T(S_Best), sizeof buf);
+			StrAppend(buf, T(S_BestWithLetters), sizeof buf);
 			StrAppend(buf, ": ", sizeof buf);
-			FormatNum(num, sizeof num, Player().course[m_lang].gameBest);
+			FormatNum(num, sizeof num, (u32)GameBestLevel());
 			StrAppend(buf, num, sizeof buf);
 		}
-		c.TextCentered(buf, font::Title, W / 2, py + 250, 60, m_gameRecord ? pal::Good : pal::InkSoft, AlignCenter,
-			       rtl);
+		c.TextCentered(buf, m_gameRecord ? font::Title : font::Body, W / 2, py + 280, 50,
+			       m_gameRecord ? pal::Good : pal::InkSoft, AlignCenter, rtl);
 		if (m_newBadges) {
 			int count = 0;
 			for (int b = 0; b < B_Count; b++)
 				count += (m_newBadges >> b) & 1;
-			c.TextCentered(T(S_NewBadge), font::Body, W / 2, py + 312, 40, pal::Accent, AlignCenter, rtl);
+			c.TextCentered(T(S_NewBadge), font::Body, W / 2, py + 336, 40, pal::Accent, AlignCenter, rtl);
 			int x = W / 2 - (count - 1) * 40;
 			for (int b = 0; b < B_Count; b++)
 				if ((m_newBadges >> b) & 1) {
-					DrawMedal(c, x, py + 385, 28, b, true);
+					DrawMedal(c, x, py + 408, 28, b, true);
 					x += 80;
 				}
 		}

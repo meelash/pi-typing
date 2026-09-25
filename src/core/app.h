@@ -108,6 +108,11 @@ private:
 	void SpawnBalloon();
 	void Burst(int x, int y, Color color, int count);
 	void EndGame();
+	// Score = levels beaten x letters in play (x2 for words), so it grows with
+	// skills that matter rather than with time spent on a few easy keys.
+	int GameScore() const;
+	int GameBestLevel() const;  // best level beaten with this letter set and mode
+	int GameMaxStart() const { return Min(GameBestLevel() + 1, kMaxStartLevel); }
 
 	Platform *m_platform;
 	Store m_store;
@@ -180,6 +185,7 @@ public:
 		int size;
 	};
 	static const int kMaxBalloons = 12, kMaxParticles = 160, kClouds = 5;
+	static const int kPopsPerLevel = 10, kMaxStartLevel = 30;
 
 private:
 	curriculum::GamePool m_pool;
@@ -187,7 +193,8 @@ private:
 	Particle m_particles[kMaxParticles];
 	Cloud m_clouds[kClouds];
 	bool m_gameWords, m_gameOver, m_gameRecord;
-	int m_score, m_lives, m_level, m_pops, m_lock;
+	int m_score, m_lives, m_level, m_levelPops, m_lock;
+	int m_startLevel;  // chosen on the intro screen; levels below it count as beaten
 	int m_spawnMs;
 	u32 m_levelBannerUntil;
 };

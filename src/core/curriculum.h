@@ -59,11 +59,14 @@ struct Exercise
 void Generate(Lang lang, int lesson, u32 seed, Exercise *out);
 
 // Pool of practice items (single letters or words) for the balloon game.
+// The letter set only grows at lessons that introduce letters, so the index
+// of the last such lesson (stage) names the set; records are kept per stage.
 struct GamePool
 {
 	const char *words[256];
 	int wordCount;
 	CharSet letters;
+	int stage;
 };
 void BuildGamePool(Lang lang, int lessonsDone, GamePool *out);
 

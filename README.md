@@ -145,6 +145,14 @@ The results screen lists the keys that caused the most mistakes.
 player ranks (Seedling to Grand Master), and **Balloon Pop**, a game that uses
 only the keys learned so far, with letters or words.
 
+In Balloon Pop, every 10 balloons popped clears a level, and each level is
+faster than the last. The score is **levels cleared × letters in play**
+(doubled in words mode). A child who has learned more letters therefore
+scores more than one playing only F and J. Each set of letters keeps its own
+best level. **Up/Down** on the game's start screen picks the starting level,
+up to one past the best level cleared with those letters. Skipped levels
+count as cleared.
+
 ![Balloon Pop](docs/screenshots/balloon-pop.png)
 
 ## Building

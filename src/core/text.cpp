@@ -167,6 +167,8 @@ static Dir ClassOf(u32 cp)
 {
 	if (IsArabic(cp) && !(cp >= 0x0660 && cp <= 0x0669))
 		return DirR;
+	if (cp == 0xD7 || cp == 0xF7)  // × ÷ are neutral symbols, not letters
+		return DirN;
 	if ((cp >= '0' && cp <= '9') || IsLatinLetter(cp) || (cp >= 0x0660 && cp <= 0x0669) ||
 	    (cp >= 0xC0 && cp < 0x0600))
 		return DirL;

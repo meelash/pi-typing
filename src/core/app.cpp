@@ -34,6 +34,8 @@ void App::Init()
 	m_attempt = 0;
 	m_paused = false;
 	m_gameOver = true;
+	m_gameWords = false;
+	m_startLevel = 1;
 	for (int i = 0; i < kClouds; i++) {
 		m_clouds[i].x = (float)m_rng.Below(W);
 		m_clouds[i].y = (float)(140 + m_rng.Below(330));
@@ -371,6 +373,7 @@ void App::KeyMap(const KeyEvent &e)
 				sfx::Trigger(SfxSelect);
 				curriculum::BuildGamePool(m_lang, Player().Completed(m_lang), &m_pool);
 				m_gameWords = m_gameWords && m_pool.wordCount >= 8;
+				m_startLevel = Clamp(m_startLevel, 1, GameMaxStart());
 				Go(ScrGameIntro);
 			} else {
 				sfx::Trigger(SfxError);
