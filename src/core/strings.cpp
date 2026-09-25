@@ -220,6 +220,8 @@ static const StrPair kStrings[S_Count] = {
 		"ٹائپنگ چیمپئن"},
 	/* S_Rank7 */ {"Grand Master", "الأستاذ الكبير",
 		"استادِ اعظم"},
+	/* S_NewRank */ {"New rank: ", "رتبة جديدة: ",
+		"نیا درجہ: "},
 };
 
 const char *Str(StrId id, Lang lang) { return kStrings[id].s[lang]; }

@@ -23,6 +23,7 @@ void App::Init()
 	m_now = m_lastUpdate = m_platform->Millis();
 	m_dirty = true;
 	m_caps = false;
+	m_newRank = -1;
 	m_player = 0;
 	m_lang = LangEn;
 	m_sel = 0;
@@ -672,9 +673,9 @@ void App::DrawProfiles(Canvas &c)
 	DrawAllLangs(c, S_WhoIsTyping, font::Body, W / 2, 140, pal::Navy);
 
 	int items = m_store.count + (m_store.count < kMaxProfiles ? 1 : 0);
-	const int cw = 250, ch = 210, gap = 30, x0 = (W - (4 * cw + 3 * gap)) / 2;
+	const int cw = 250, ch = 222, gap = 30, x0 = (W - (4 * cw + 3 * gap)) / 2;
 	for (int i = 0; i < items; i++) {
-		int x = x0 + (i % 4) * (cw + gap), y = 180 + (i / 4) * (ch + 26);
+		int x = x0 + (i % 4) * (cw + gap), y = 172 + (i / 4) * (ch + 20);
 		bool sel = i == m_sel && !m_confirmDelete;
 		if (sel)
 			y -= 6;
@@ -684,18 +685,21 @@ void App::DrawProfiles(Canvas &c)
 			c.StrokeRoundRect(x - 2, y - 2, cw + 4, ch + 4, 28, 5, pal::Accent);
 		if (i < m_store.count) {
 			const Profile &p = m_store.players[i];
-			DrawAvatar(c, x + cw / 2, y + 66, 46, p);
-			DrawName(c, p, font::Title, x + cw / 2, y + 152, pal::Ink, AlignCenter);
+			DrawAvatar(c, x + cw / 2, y + 60, 44, p);
+			DrawName(c, p, font::Title, x + cw / 2, y + 146, pal::Ink, AlignCenter);
 			char num[16];
 			FormatNumIn(num, sizeof num, (u32)p.TotalStars(), (Lang)p.lang);
-			c.FillStar(x + cw / 2 - 30, y + 181, 13, pal::Gold);
-			c.Text(num, font::Body, x + cw / 2 - 10, y + 192, pal::InkSoft, AlignLeft);
+			c.FillStar(x + cw / 2 - 30, y + 174, 13, pal::Gold);
+			c.Text(num, font::Body, x + cw / 2 - 10, y + 185, pal::InkSoft, AlignLeft);
+			Lang pl = (Lang)p.lang;
+			c.Text(Str((StrId)(S_Rank0 + p.Rank()), pl), font::Small, x + cw / 2, y + 208, pal::Accent,
+			       AlignCenter, pl != LangEn);
 		} else {
-			c.FillCircle(x + cw / 2, y + 70, 46, 0xFFEFF1F7);
-			c.FillRect(x + cw / 2 - 22, y + 66, 44, 8, pal::Accent);
-			c.FillRect(x + cw / 2 - 4, y + 48, 8, 44, pal::Accent);
-			c.Text(Str(S_NewPlayer, LangEn), font::Body, x + cw / 2, y + 150, pal::Ink, AlignCenter);
-			DrawArUr(c, S_NewPlayer, font::Small, x + cw / 2, y + 188, pal::Ink);
+			c.FillCircle(x + cw / 2, y + 62, 44, 0xFFEFF1F7);
+			c.FillRect(x + cw / 2 - 22, y + 58, 44, 8, pal::Accent);
+			c.FillRect(x + cw / 2 - 4, y + 40, 8, 44, pal::Accent);
+			c.Text(Str(S_NewPlayer, LangEn), font::Body, x + cw / 2, y + 146, pal::Ink, AlignCenter);
+			DrawArUr(c, S_NewPlayer, font::Small, x + cw / 2, y + 184, pal::Ink);
 		}
 	}
 	if (!m_platform->StorageAvailable()) {

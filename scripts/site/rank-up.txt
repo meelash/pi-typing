@@ -1,0 +1,28 @@
+# A new player's first two lessons with three stars each: 6 stars makes them an Explorer.
+wait 3000
+key enter
+expect newprofile
+typeas en Omar
+key right
+key right
+key right
+key right
+key enter
+expect courses
+key enter
+expect map
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 2500
+shot rank-up

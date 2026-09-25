@@ -155,8 +155,13 @@ A lesson counts as passed at **90% accuracy** (1 star). **95%** earns 2 stars.
 **98%** plus the lesson's target speed (8–18 words per minute) earns 3 stars.
 The results screen lists the keys that caused the most mistakes.
 
+Stars from all three courses add up to a **rank**: Seedling, Explorer (6
+stars), Adventurer (15), Keyboard Knight (30), Speed Star (50), Typing Hero
+(75), Typing Champion (105) and Grand Master (140). Each player's card shows
+their rank, and the results screen announces a new one.
+
 **Game features:** stars, points, combo streaks with celebrations, 13 badges,
-player ranks (Seedling to Grand Master), and **Balloon Pop**, a game that uses
+player ranks, and **Balloon Pop**, a game that uses
 only the keys learned so far, with letters or words.
 
 In Balloon Pop, every 10 balloons popped clears a level, and each level is

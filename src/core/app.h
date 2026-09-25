@@ -169,6 +169,7 @@ private:
 	// Results
 	int m_resStars, m_resAcc, m_resWpm, m_resPoints, m_resStarsShown;
 	bool m_resBest;
+	int m_newRank;  // rank reached by the last lesson, or -1
 	u32 m_newBadges;
 
 public:

@@ -1,0 +1,4 @@
+# Runs on the save file the simulator tests leave in build/shots/: four players at different ranks.
+wait 3000
+expect profiles
+shot players

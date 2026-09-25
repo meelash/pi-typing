@@ -18,20 +18,22 @@ run() {  # run <script> [seed progress file]: each scene starts from its own sav
 run scripts/site/no-keyboard.txt
 run scripts/site/capitals.txt scripts/site/capitals-progress.txt
 run scripts/site/combo-game.txt
+run scripts/site/rank-up.txt
+run scripts/site/players.txt build/shots/progress.txt
 
 # site name = simulator screenshot
 python3 - <<'EOF'
 from PIL import Image
 import os
 shots = {
-    "splash": "build/shots/01-splash", "players": "build/shots/40-profiles",
+    "splash": "build/shots/01-splash", "players": "build/site-shots/players",
     "new-player": "build/shots/03-newprofile", "new-player-ur": "build/shots/41-newprofile-ur",
     "courses": "build/shots/04-courses", "map-start": "build/shots/05-map",
     "map": "build/site-shots/map-progress", "intro": "build/shots/06-intro",
     "intro-capitals": "build/site-shots/intro-capitals", "typing": "build/shots/07-typing",
     "combo": "build/site-shots/combo", "shift-tip": "build/site-shots/shift-tip",
     "capslock": "build/site-shots/capslock", "pause": "build/shots/28-pause",
-    "results": "build/shots/08-results", "results-practise": "build/shots/29-results-fail",
+    "results": "build/shots/08-results", "rank-up": "build/site-shots/rank-up", "results-practise": "build/shots/29-results-fail",
     "badges": "build/shots/27-badges", "game-intro": "build/shots/26b-gameintro-startlevel",
     "game": "build/site-shots/game-balloons", "game-over": "build/shots/26-gameover",
     "game-words-ur": "build/shots/55-gameintro-ur-words",

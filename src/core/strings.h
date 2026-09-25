@@ -102,6 +102,7 @@ enum StrId {
 	S_Rank5,
 	S_Rank6,
 	S_Rank7,
+	S_NewRank,
 	S_Count
 };
 

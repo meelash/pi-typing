@@ -189,6 +189,7 @@ void App::FinishLesson()
 	m_resPoints = m_points + m_resStars * 25;
 
 	u32 before = p.badges;
+	int rankBefore = p.Rank();
 	CourseProgress &cp = p.course[m_lang];
 	m_resBest = m_resStars > cp.stars[m_lesson] && cp.stars[m_lesson] > 0;
 	cp.stars[m_lesson] = (u8)Max<int>(cp.stars[m_lesson], m_resStars);
@@ -200,6 +201,9 @@ void App::FinishLesson()
 	p.keys += (u32)m_typed;
 	p.bestCombo = (u16)Max<int>(p.bestCombo, m_maxCombo);
 	AwardBadges(before);
+	m_newRank = p.Rank() > rankBefore ? p.Rank() : -1;
+	if (m_newRank >= 0 && !m_newBadges)
+		sfx::Trigger(SfxBadge);
 	Save();
 
 	// Confetti for a good result.
@@ -596,8 +600,16 @@ void App::DrawResults(Canvas &c)
 		if (i == 1)
 			c.TextCentered(T(S_Wpm), font::Small, cx, py + 276, 30, pal::InkSoft, AlignCenter, rtl);
 	}
-	StrId msg = (StrId)(S_Stars0 - m_resStars);
-	c.TextCentered(T(msg), font::Body, W / 2, py + 316, 46, pal::Ink, AlignCenter, rtl);
+	if (m_newRank >= 0) {
+		char rank[96] = "";
+		StrAppend(rank, T(S_NewRank), sizeof rank);
+		StrAppend(rank, T((StrId)(S_Rank0 + m_newRank)), sizeof rank);
+		StrAppend(rank, "!", sizeof rank);
+		c.TextCentered(rank, font::Title, W / 2, py + 312, 54, pal::Accent, AlignCenter, rtl);
+	} else {
+		StrId msg = (StrId)(S_Stars0 - m_resStars);
+		c.TextCentered(T(msg), font::Body, W / 2, py + 316, 46, pal::Ink, AlignCenter, rtl);
+	}
 
 	// Keys that caused mistakes, most frequent first.
 	int order[16];
