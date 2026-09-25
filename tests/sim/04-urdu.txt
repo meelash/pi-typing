@@ -1,0 +1,254 @@
+# Continues from 03 (three players). Urdu course: new player with an Urdu name, every lesson,
+# Balloon Pop in words mode, and the multilingual screens.
+wait 3000
+shot 40-profiles
+key right
+key right
+key right
+key enter
+expect newprofile
+key tab
+key tab
+typeas ur سلیم
+shot 41-newprofile-ur
+key enter
+expect courses
+shot 42-courses
+key enter
+expect map
+shot 43-map-ur
+key enter
+expect intro
+shot 44-intro-ur
+key enter
+expect typing
+shot 45-typing-ur-1
+solve
+expect results
+wait 2500
+shot 46-results-ur
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve 6
+shot 47-typing-ur-8
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+shot 52-intro-ur-18
+key enter
+expect typing
+solve 6
+shot 48-typing-ur-18
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve 6
+shot 49-typing-ur-20
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve 6
+shot 50-typing-ur-punct
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve 6
+shot 51-typing-ur-final
+solve
+expect results
+wait 1000
+key enter
+expect intro
+key enter
+expect typing
+solve
+expect results
+wait 1000
+shot 53-results-ur-final
+key esc
+expect map
+shot 54-map-ur-done
+key right
+key right
+key right
+key right
+key right
+key right
+key down
+key down
+key down
+key down
+expect map
+key enter
+expect gameintro
+key tab
+shot 55-gameintro-ur-words
+key enter
+expect game
+pop 6000
+shot 56-game-ur-words
+wait 60000
+shot 57-gameover-ur
+key esc
+expect map
+key left
+key enter
+expect badges
+shot 58-badges-ur
+key esc
+key esc
+expect courses
+key esc
+expect profiles
+key delete
+shot 59-delete-ur
+key esc

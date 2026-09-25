@@ -70,15 +70,23 @@ void App::FormatNumIn(char *out, int cap, u32 v, Lang lang)
 {
 	char digits[12] = "";
 	StrAppendUInt(digits, v, sizeof digits);
-	if (lang != LangAr) {
+	if (lang == LangEn) {
 		StrCopy(out, digits, cap);
 		return;
 	}
+	// Arabic-Indic digits for Arabic, Extended Arabic-Indic (Urdu) digits for Urdu.
+	u32 zero = lang == LangUr ? 0x06F0 : 0x0660;
 	u32 cps[12];
 	int n = 0;
 	for (const char *p = digits; *p; p++)
-		cps[n++] = 0x0660 + (u32)(*p - '0');
+		cps[n++] = zero + (u32)(*p - '0');
 	text::Utf8Encode(cps, n, out, cap);
+}
+
+const char *App::LangName(Lang lang)
+{
+	static const char *const kNames[LangCount] = {"English", "العربية", "اردو"};
+	return kNames[lang];
 }
 
 void App::LessonLabel(int lesson, char *out, int cap) const
@@ -260,7 +268,7 @@ void App::KeyNewProfile(const KeyEvent &e)
 		Go(ScrProfiles);
 		return;
 	case KeyTab:
-		m_nameLang = m_nameLang == LangEn ? LangAr : LangEn;
+		m_nameLang = (Lang)((m_nameLang + 1) % LangCount);
 		sfx::Trigger(SfxMove);
 		return;
 	case KeyLeft:
@@ -287,6 +295,7 @@ void App::KeyNewProfile(const KeyEvent &e)
 		text::Utf8Encode(m_name, m_nameLen, p.name, kMaxNameBytes);
 		p.color = m_nameColor;
 		p.lang = m_nameLang;
+		p.nameLang = m_nameLang;
 		m_player = m_store.count++;
 		m_lang = m_nameLang;
 		Save();
@@ -303,7 +312,7 @@ void App::KeyNewProfile(const KeyEvent &e)
 	int n = kbd::Output(*k, m_nameLang, (e.mods & ModShift) != 0, m_caps, out);
 	for (int i = 0; i < n; i++) {
 		u32 c = out[i];
-		bool ok = text::IsLatinLetter(c) || text::IsArabicLetter(c) || (c >= '0' && c <= '9') ||
+		bool ok = text::IsLatinLetter(c) || text::IsArabicLetter(c) || text::IsUrduLetter(c) || (c >= '0' && c <= '9') ||
 			  (c == ' ' && m_nameLen > 0) || c == '-';
 		if (ok && m_nameLen < 16)
 			m_name[m_nameLen++] = c;
@@ -314,11 +323,13 @@ void App::KeyCourses(const KeyEvent &e)
 {
 	switch (e.usage) {
 	case KeyLeft:
-	case KeyRight:
-		m_sel = 1 - m_sel;
+	case KeyRight: {
+		int old = m_sel;
+		m_sel = Clamp(m_sel + (e.usage == KeyRight ? 1 : -1), 0, LangCount - 1);
 		m_lang = (Lang)m_sel;
-		sfx::Trigger(SfxMove);
+		sfx::Trigger(m_sel != old ? SfxMove : SfxError);
 		break;
+	}
 	case KeyEscape:
 		m_sel = m_player;
 		Go(ScrProfiles);
@@ -419,7 +430,11 @@ void App::DrawBackground(Canvas &c) { c.VGradient(0, 0, W, H, pal::BgTop, pal::B
 void App::DrawHeader(Canvas &c, const char *title)
 {
 	c.FillRect(0, 0, W, 72, pal::Navy);
-	c.TextCentered(title, font::Title, W / 2, 0, 72, 0xFFFFFFFF, AlignCenter, Rtl());
+	// Tall Nastaliq titles would stick out of the bar at the title size.
+	static text::Layout l;
+	text::LayoutUtf8(title, font::Title, Rtl(), &l);
+	font::Size size = l.ascent > 44 ? font::Body : font::Title;
+	c.TextCentered(title, size, W / 2, 0, 72, 0xFFFFFFFF, AlignCenter, Rtl());
 	if (m_screen == ScrProfiles || m_screen == ScrNewProfile || m_screen == ScrSplash)
 		return;
 	const Profile &p = m_store.players[m_player];
@@ -427,8 +442,7 @@ void App::DrawHeader(Canvas &c, const char *title)
 	// Player chip on the leading side.
 	int ax = rtl ? W - 44 : 44;
 	DrawAvatar(c, ax, 36, 24, p);
-	c.TextCentered(p.name, font::Body, rtl ? W - 80 : 80, 0, 72, 0xFFFFFFFF, rtl ? AlignRight : AlignLeft,
-		       NameIsRtl(p.name));
+	DrawName(c, p, font::Body, rtl ? W - 80 : 80, 47, 0xFFFFFFFF, rtl ? AlignRight : AlignLeft);
 	// Stars and points on the trailing side.
 	char num[16];
 	FormatNum(num, sizeof num, (u32)p.TotalStars());
@@ -444,6 +458,45 @@ void App::DrawHint(Canvas &c, const char *hint)
 	c.TextCentered(hint, font::Small, W / 2, H - 40, 40, pal::InkSoft, AlignCenter, Rtl());
 }
 
+void App::DrawArUr(Canvas &c, StrId id, font::Size size, int cx, int y, Color color)
+{
+	const char *ar = Str(id, LangAr), *ur = Str(id, LangUr);
+	int wAr = text::MeasureUtf8(ar, size, true), wUr, gap = size >= font::Title ? 60 : 44;
+	{
+		text::UrduScope scope(true);
+		wUr = text::MeasureUtf8(ur, size, true);
+	}
+	// Arabic on the right (read first), Urdu on the left.
+	int x = cx - (wAr + gap + wUr) / 2;
+	c.Text(ar, size, x + wUr + gap, y, color, AlignLeft, true);
+	text::UrduScope scope(true);
+	c.Text(ur, size, x, y, color, AlignLeft, true);
+}
+
+void App::DrawAllLangs(Canvas &c, StrId id, font::Size size, int cx, int y, Color color)
+{
+	const char *en = Str(id, LangEn), *ar = Str(id, LangAr), *ur = Str(id, LangUr);
+	int wEn = text::MeasureUtf8(en, size, false), wAr = text::MeasureUtf8(ar, size, true), wUr;
+	{
+		text::UrduScope scope(true);
+		wUr = text::MeasureUtf8(ur, size, true);
+	}
+	int gap = size >= font::Title ? 56 : 40;
+	int x = cx - (wEn + wUr + wAr + 2 * gap) / 2;
+	c.Text(en, size, x, y, color, AlignLeft);
+	c.Text(ar, size, x + wEn + wUr + 2 * gap, y, color, AlignLeft, true);
+	text::UrduScope scope(true);
+	c.Text(ur, size, x + wEn + gap, y, color, AlignLeft, true);
+}
+
+void App::DrawName(Canvas &c, const Profile &p, font::Size size, int x, int y, Color color, Align align)
+{
+	text::UrduScope scope(p.nameLang == LangUr);
+	if (p.nameLang == LangUr && size == font::Title)
+		size = font::Body;  // Nastaliq names are tall
+	c.Text(p.name, size, x, y, color, align, NameIsRtl(p.name));
+}
+
 void App::DrawAvatar(Canvas &c, int cx, int cy, int r, const Profile &p)
 {
 	c.FillCircle(cx, cy + r / 12, r, 0x40000000);
@@ -456,6 +509,7 @@ void App::DrawAvatar(Canvas &c, int cx, int cy, int r, const Profile &p)
 	char s[8];
 	text::Utf8Encode(first, 1, s, sizeof s);
 	font::Size size = r >= 40 ? font::Type : (r >= 26 ? font::Title : font::Body);
+	text::UrduScope scope(p.nameLang == LangUr);
 	c.TextCentered(s, size, cx, cy - r, 2 * r, 0xFFFFFFFF, AlignCenter, text::IsArabic(first[0]));
 }
 
@@ -514,8 +568,11 @@ void App::DrawDiagnostics(Canvas &c, int scroll, bool viewer)
 	const int lineH = 25, perPage = viewer ? 26 : 23;
 	c.FillRect(0, 0, W, H, pal::BgTop);
 	c.Text(Str(S_PlugKeyboard, LangEn), font::Body, 40, 44, viewer ? pal::BgTop : pal::Accent, AlignLeft);
-	if (!viewer)
+	if (!viewer) {
 		c.Text(Str(S_PlugKeyboard, LangAr), font::Body, W - 40, 44, pal::Accent, AlignRight, true);
+		text::UrduScope scope(true);
+		c.Text(Str(S_PlugKeyboard, LangUr), font::Body, W / 2 + 60, 44, pal::Accent, AlignCenter, true);
+	}
 	int last = Max(0, n - Min(scroll, Max(0, n - perPage)));
 	int first = Max(0, last - perPage);
 	if (viewer)
@@ -558,6 +615,10 @@ bool App::Draw(Canvas &c)
 	if (!m_dirty)
 		return false;
 	m_dirty = false;
+	// Screens before a course is chosen show all languages; there only text
+	// with Urdu-only letters (or drawn in an UrduScope) is set in Nastaliq.
+	bool multilingual = m_screen == ScrSplash || m_screen == ScrProfiles || m_screen == ScrNewProfile;
+	text::SetUrduContext(m_lang == LangUr && !multilingual);
 	switch (m_screen) {
 	case ScrSplash: DrawSplash(c); break;
 	case ScrProfiles: DrawProfiles(c); break;
@@ -572,6 +633,7 @@ bool App::Draw(Canvas &c)
 	case ScrBadges: DrawBadges(c); break;
 	}
 	DrawToast(c);
+	text::SetUrduContext(false);
 	if (m_diag)
 		DrawDiagnostics(c, m_diagScroll, true);
 	return true;
@@ -587,18 +649,18 @@ void App::DrawSplash(Canvas &c)
 		int bounce = ISin((t / 2 + i * 120) & 1023) * 18 / 1024;
 		int x = W / 2 + (i - 3) * 120;
 		bool left = i < 4;
-		DrawKeycap(c, x, 250 - Abs(bounce), 100, keys[i], pal::Finger[left ? i % 4 : 8 - (i - 3)]);
+		DrawKeycap(c, x, 220 - Abs(bounce), 100, keys[i], pal::Finger[left ? i % 4 : 8 - (i - 3)]);
 	}
 	if (!m_platform->KeyboardPresent() && t > 6000) {
 		// Still no keyboard: show what the system found, for a parent to check.
 		DrawDiagnostics(c, 0, false);
 		return;
 	}
-	c.Text(Str(S_AppTitle, LangEn), font::Type, W / 2, 420, pal::Navy, AlignCenter);
-	c.Text(Str(S_AppTitle, LangAr), font::Type, W / 2, 510, pal::Navy, AlignCenter, true);
+	c.Text(Str(S_AppTitle, LangEn), font::Type, W / 2, 380, pal::Navy, AlignCenter);
+	DrawArUr(c, S_AppTitle, font::Type, W / 2, 480, pal::Navy);
 	if (!m_platform->KeyboardPresent()) {
-		c.Text(Str(S_PlugKeyboard, LangEn), font::Body, W / 2, 600, pal::Accent, AlignCenter);
-		c.Text(Str(S_PlugKeyboard, LangAr), font::Body, W / 2, 645, pal::Accent, AlignCenter, true);
+		c.Text(Str(S_PlugKeyboard, LangEn), font::Body, W / 2, 590, pal::Accent, AlignCenter);
+		DrawArUr(c, S_PlugKeyboard, font::Body, W / 2, 645, pal::Accent);
 	}
 }
 
@@ -606,10 +668,8 @@ void App::DrawProfiles(Canvas &c)
 {
 	DrawBackground(c);
 	c.FillRect(0, 0, W, 72, pal::Navy);
-	c.TextCentered(Str(S_AppTitle, LangEn), font::Title, W / 2 - 180, 0, 72, 0xFFFFFFFF, AlignCenter);
-	c.TextCentered(Str(S_AppTitle, LangAr), font::Title, W / 2 + 190, 0, 72, 0xFFFFFFFF, AlignCenter, true);
-	c.Text(Str(S_WhoIsTyping, LangEn), font::Title, W / 2 - 20, 140, pal::Navy, AlignRight);
-	c.Text(Str(S_WhoIsTyping, LangAr), font::Title, W / 2 + 20, 140, pal::Navy, AlignLeft, true);
+	DrawAllLangs(c, S_AppTitle, font::Title, W / 2, 50, 0xFFFFFFFF);
+	DrawAllLangs(c, S_WhoIsTyping, font::Body, W / 2, 140, pal::Navy);
 
 	int items = m_store.count + (m_store.count < kMaxProfiles ? 1 : 0);
 	const int cw = 250, ch = 210, gap = 30, x0 = (W - (4 * cw + 3 * gap)) / 2;
@@ -625,7 +685,7 @@ void App::DrawProfiles(Canvas &c)
 		if (i < m_store.count) {
 			const Profile &p = m_store.players[i];
 			DrawAvatar(c, x + cw / 2, y + 66, 46, p);
-			c.Text(p.name, font::Title, x + cw / 2, y + 152, pal::Ink, AlignCenter, NameIsRtl(p.name));
+			DrawName(c, p, font::Title, x + cw / 2, y + 152, pal::Ink, AlignCenter);
 			char num[16];
 			FormatNumIn(num, sizeof num, (u32)p.TotalStars(), (Lang)p.lang);
 			c.FillStar(x + cw / 2 - 30, y + 181, 13, pal::Gold);
@@ -635,29 +695,27 @@ void App::DrawProfiles(Canvas &c)
 			c.FillRect(x + cw / 2 - 22, y + 66, 44, 8, pal::Accent);
 			c.FillRect(x + cw / 2 - 4, y + 48, 8, 44, pal::Accent);
 			c.Text(Str(S_NewPlayer, LangEn), font::Body, x + cw / 2, y + 150, pal::Ink, AlignCenter);
-			c.Text(Str(S_NewPlayer, LangAr), font::Body, x + cw / 2, y + 188, pal::Ink, AlignCenter, true);
+			DrawArUr(c, S_NewPlayer, font::Small, x + cw / 2, y + 188, pal::Ink);
 		}
 	}
 	if (!m_platform->StorageAvailable()) {
 		c.FillRoundRect(W / 2 - 430, 560, 860, 76, 20, 0xFFFFE3E3);
 		c.Text(Str(S_NoStorage, LangEn), font::Small, W / 2, 590, pal::Bad, AlignCenter);
-		c.Text(Str(S_NoStorage, LangAr), font::Small, W / 2, 624, pal::Bad, AlignCenter, true);
+		DrawArUr(c, S_NoStorage, font::Small, W / 2, 624, pal::Bad);
 	}
 	c.FillRect(0, H - 64, W, 64, 0x14000000);
 	c.Text(Str(S_ProfilesHint, LangEn), font::Small, W / 2, H - 38, pal::InkSoft, AlignCenter);
-	c.Text(Str(S_ProfilesHint, LangAr), font::Small, W / 2, H - 10, pal::InkSoft, AlignCenter, true);
+	DrawArUr(c, S_ProfilesHint, font::Small, W / 2, H - 10, pal::InkSoft);
 
 	if (m_confirmDelete && m_sel < m_store.count) {
 		c.FillRect(0, 0, W, H, 0x90202848);
-		int pw = 640, ph = 330, px = (W - pw) / 2, py = (H - ph) / 2;
+		int pw = 760, ph = 340, px = (W - pw) / 2, py = (H - ph) / 2;
 		c.FillRoundRect(px, py, pw, ph, 30, pal::Panel);
 		DrawAvatar(c, W / 2, py + 70, 40, m_store.players[m_sel]);
-		const char *name = m_store.players[m_sel].name;
-		c.Text(name, font::Title, W / 2, py + 160, pal::Ink, AlignCenter, NameIsRtl(name));
-		c.Text(Str(S_DeleteQuestion, LangEn), font::Body, W / 2, py + 210, pal::Bad, AlignCenter);
-		c.Text(Str(S_DeleteQuestion, LangAr), font::Body, W / 2, py + 250, pal::Bad, AlignCenter, true);
-		c.Text(Str(S_DeleteHint, LangEn), font::Small, W / 2 - 20, py + 300, pal::InkSoft, AlignRight);
-		c.Text(Str(S_DeleteHint, LangAr), font::Small, W / 2 + 20, py + 300, pal::InkSoft, AlignLeft, true);
+		DrawName(c, m_store.players[m_sel], font::Title, W / 2, py + 164, pal::Ink, AlignCenter);
+		c.Text(Str(S_DeleteQuestion, LangEn), font::Body, W / 2, py + 216, pal::Bad, AlignCenter);
+		DrawArUr(c, S_DeleteQuestion, font::Body, W / 2, py + 260, pal::Bad);
+		DrawAllLangs(c, S_DeleteHint, font::Small, W / 2, py + 310, pal::InkSoft);
 	}
 }
 
@@ -665,8 +723,7 @@ void App::DrawNewProfile(Canvas &c)
 {
 	DrawBackground(c);
 	c.FillRect(0, 0, W, 72, pal::Navy);
-	c.TextCentered(Str(S_NewPlayer, LangEn), font::Title, W / 2 - 120, 0, 72, 0xFFFFFFFF, AlignCenter);
-	c.TextCentered(Str(S_NewPlayer, LangAr), font::Title, W / 2 + 120, 0, 72, 0xFFFFFFFF, AlignCenter, true);
+	DrawAllLangs(c, S_NewPlayer, font::Title, W / 2, 50, 0xFFFFFFFF);
 
 	Profile preview;
 	MemZero(&preview, sizeof preview);
@@ -678,16 +735,16 @@ void App::DrawNewProfile(Canvas &c)
 	else
 		c.FillCircle(W / 2, 180, 56, pal::Avatar[m_nameColor]);
 
-	c.Text(Str(S_TypeYourName, LangEn), font::Title, W / 2 - 20, 305, pal::Navy, AlignRight);
-	c.Text(Str(S_TypeYourName, LangAr), font::Title, W / 2 + 20, 305, pal::Navy, AlignLeft, true);
+	DrawAllLangs(c, S_TypeYourName, font::Title, W / 2, 305, pal::Navy);
 
 	int bw = 720, bh = 100, bx = (W - bw) / 2, by = 330;
 	c.FillRoundRect(bx, by + 6, bw, bh, 24, pal::Shadow);
 	c.FillRoundRect(bx, by, bw, bh, 24, pal::Panel);
 	c.StrokeRoundRect(bx, by, bw, bh, 24, 4, pal::Accent);
-	bool rtl = m_nameLang == LangAr;
+	bool rtl = m_nameLang != LangEn;
+	text::UrduScope scope(m_nameLang == LangUr);
 	static text::Layout l;
-	text::LayoutText(m_name, m_nameLen, font::Type, rtl, &l);
+	text::LayoutText(m_name, m_nameLen, m_nameLang == LangUr ? font::Title : font::Type, rtl, &l);
 	int tx = rtl ? bx + bw - 30 - l.width : bx + 30;
 	c.DrawLayout(l, tx, by + 70, pal::Ink);
 	if ((m_now / 500) % 2 == 0) {
@@ -695,7 +752,7 @@ void App::DrawNewProfile(Canvas &c)
 		c.FillRect(cx, by + 20, 4, 62, pal::Accent);
 	}
 	// Language pill
-	const char *langName = m_nameLang == LangEn ? "English" : "عربي";
+	const char *langName = LangName(m_nameLang);
 	int pw = 150, px = bx + bw + 20;
 	c.FillRoundRect(px, by + 25, pw, 50, 25, pal::Navy);
 	c.TextCentered(langName, font::Body, px + pw / 2, by + 25, 50, 0xFFFFFFFF, AlignCenter, rtl);
@@ -707,21 +764,25 @@ void App::DrawNewProfile(Canvas &c)
 			c.FillCircle(cx, 500, 34, pal::Navy);
 		c.FillCircle(cx, 500, 27, pal::Avatar[i]);
 	}
-	c.Text(Str(S_PickColor, LangEn), font::Small, W / 2 - 20, 575, pal::InkSoft, AlignRight);
-	c.Text(Str(S_PickColor, LangAr), font::Small, W / 2 + 20, 575, pal::InkSoft, AlignLeft, true);
+	DrawAllLangs(c, S_PickColor, font::Small, W / 2, 575, pal::InkSoft);
 
 	c.FillRect(0, H - 64, W, 64, 0x14000000);
 	c.Text(Str(S_NameHint, LangEn), font::Small, W / 2, H - 38, pal::InkSoft, AlignCenter);
-	c.Text(Str(S_NameHint, LangAr), font::Small, W / 2, H - 10, pal::InkSoft, AlignCenter, true);
+	DrawArUr(c, S_NameHint, font::Small, W / 2, H - 10, pal::InkSoft);
 }
 
 void App::DrawCourses(Canvas &c)
 {
 	DrawBackground(c);
 	DrawHeader(c, T(S_ChooseCourse));
+	static const char *const kSample[LangCount] = {"Aa", "أ ب", "ا ب"};
+	static const Color kTint[LangCount] = {0xFFE7F5FF, 0xFFFFF0E0, 0xFFE8F8EC};
+	const int cw = 360, ch = 400, gap = 36, x0 = (W - LangCount * cw - (LangCount - 1) * gap) / 2;
 	for (int i = 0; i < LangCount; i++) {
 		Lang l = (Lang)i;
-		int cw = 460, ch = 400, x = i == 0 ? W / 2 - cw - 30 : W / 2 + 30, y = 140;
+		bool rtl = l != LangEn;
+		text::UrduScope scope(l == LangUr);
+		int x = x0 + i * (cw + gap), y = 140;
 		bool sel = i == m_sel;
 		if (sel)
 			y -= 8;
@@ -729,19 +790,18 @@ void App::DrawCourses(Canvas &c)
 		c.FillRoundRect(x, y, cw, ch, 34, pal::Panel);
 		if (sel)
 			c.StrokeRoundRect(x - 3, y - 3, cw + 6, ch + 6, 36, 6, pal::Accent);
-		c.FillRoundRect(x + 30, y + 30, cw - 60, 170, 26, i == 0 ? 0xFFE7F5FF : 0xFFFFF0E0);
-		c.TextCentered(i == 0 ? "Aa" : "أ ب", font::Huge, x + cw / 2, y + 30, 170, pal::Navy, AlignCenter,
-			       i == 1);
-		c.Text(i == 0 ? "English" : "العربية", font::Type, x + cw / 2, y + 270, pal::Ink, AlignCenter, i == 1);
+		c.FillRoundRect(x + 30, y + 30, cw - 60, 170, 26, kTint[i]);
+		c.TextCentered(kSample[i], font::Huge, x + cw / 2, y + 30, 170, pal::Navy, AlignCenter, rtl);
+		c.Text(LangName(l), font::Type, x + cw / 2, y + 270, pal::Ink, AlignCenter, rtl);
 		const Profile &p = Player();
 		int total = curriculum::Count(l), done = p.Completed(l);
 		int bx = x + 50, bw = cw - 100, by = y + 310;
 		c.FillRoundRect(bx, by, bw, 18, 9, 0xFFE6E8F0);
 		if (done)
-			c.FillRoundRect(i == 1 ? bx + bw - bw * done / total : bx, by, Max(18, bw * done / total), 18, 9,
+			c.FillRoundRect(rtl ? bx + bw - bw * done / total : bx, by, Max(18, bw * done / total), 18, 9,
 					pal::Good);
 		char num[32];
-		FormatNum(num, sizeof num, (u32)p.CourseStars(l));
+		FormatNumIn(num, sizeof num, (u32)p.CourseStars(l), l);
 		c.FillStar(x + cw / 2 - 30, y + 360, 16, pal::Gold);
 		c.Text(num, font::Body, x + cw / 2 - 6, y + 372, pal::InkSoft, AlignLeft);
 	}
@@ -751,7 +811,7 @@ void App::DrawCourses(Canvas &c)
 void App::DrawMap(Canvas &c)
 {
 	DrawBackground(c);
-	DrawHeader(c, m_lang == LangEn ? "English" : "العربية");
+	DrawHeader(c, LangName(m_lang));
 	const Profile &p = Player();
 	int n = curriculum::Count(m_lang);
 	int unlocked = p.Unlocked(m_lang);
@@ -796,9 +856,21 @@ void App::DrawMap(Canvas &c)
 			if (k > 3) {  // digit rows: "1-5"
 				u32 range[3] = {cps[0], '-', cps[k - 1]};
 				text::Utf8Encode(range, 3, label, sizeof label);
+			} else if (m_lang == LangUr) {
+				// Separate letters: joined, Nastaliq would draw them as one tall word.
+				u32 spaced[8];
+				int m = 0;
+				for (int i = 0; i < k; i++) {
+					if (i)
+						spaced[m++] = ' ';
+					spaced[m++] = cps[i];
+				}
+				text::Utf8Encode(spaced, m, label, sizeof label);
 			} else
 				StrCopy(label, d.keys, sizeof label);
-			c.TextCentered(label, font::Title, x, y - r, 2 * r, ink, AlignCenter, m_lang == LangAr);
+			font::Size ls = text::MeasureUtf8(label, font::Title, rtl) <= 2 * r - 8 ? font::Title
+				      : text::MeasureUtf8(label, font::Body, rtl) <= 2 * r + 8 ? font::Body : font::Small;
+			c.TextCentered(label, ls, x, y - r, 2 * r, ink, AlignCenter, rtl);
 			break;
 		}
 		case curriculum::Review: c.FillStar(x, y + 2, 22, ink); break;
@@ -822,10 +894,10 @@ void App::DrawMap(Canvas &c)
 	int tx = rtl ? infoX + infoW - 28 : infoX + 28;
 	Align al = rtl ? AlignRight : AlignLeft;
 	if (m_sel < n) {
-		char label[128];
+		char label[192];
 		LessonLabel(m_sel, label, sizeof label);
 		c.Text(label, font::Body, tx, py + 36, pal::Ink, al, rtl);
-		char info[128] = "";
+		char info[192] = "";
 		if (m_sel >= unlocked)
 			StrCopy(info, T(S_Locked), sizeof info);
 		else if (p.course[m_lang].stars[m_sel]) {
@@ -845,7 +917,7 @@ void App::DrawMap(Canvas &c)
 	} else {
 		c.Text(T(m_sel == n ? S_BalloonGame : S_Badges), font::Body, tx, py + 36, pal::Ink, al, rtl);
 		if (m_sel == n) {
-			char info[96] = "";
+			char info[192] = "";
 			if (p.Completed(m_lang) == 0)
 				StrCopy(info, T(S_GameLocked), sizeof info);
 			else {
@@ -908,10 +980,10 @@ void App::DrawBadges(Canvas &c)
 		if (b == m_sel)
 			c.StrokeRoundRect(cx - 80, cy - 62, 160, 140, 24, 4, pal::Accent);
 	}
-	int py = 560;
-	c.FillRoundRect(140, py + 5, W - 280, 92, 24, pal::Shadow);
-	c.FillRoundRect(140, py, W - 280, 92, 24, pal::Panel);
-	c.Text(kBadges[m_sel].name[m_lang], font::Title, W / 2, py + 44, pal::Ink, AlignCenter, rtl);
-	c.Text(kBadges[m_sel].desc[m_lang], font::Body, W / 2, py + 80, pal::InkSoft, AlignCenter, rtl);
+	int py = 534;
+	c.FillRoundRect(140, py + 5, W - 280, 136, 24, pal::Shadow);
+	c.FillRoundRect(140, py, W - 280, 136, 24, pal::Panel);
+	c.TextCentered(kBadges[m_sel].name[m_lang], font::Title, W / 2, py + 6, 64, pal::Ink, AlignCenter, rtl);
+	c.TextCentered(kBadges[m_sel].desc[m_lang], font::Body, W / 2, py + 70, 60, pal::InkSoft, AlignCenter, rtl);
 	DrawHint(c, T(S_BadgesHint));
 }

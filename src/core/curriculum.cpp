@@ -59,6 +59,38 @@ static const LessonDef kLessonsAr[] = {
 	{Final, "", 18},
 };
 
+// Urdu (CRULP phonetic layout): the same finger-by-finger order as English,
+// since the letters sit on the English keys that sound alike. Frequent
+// letters come first; Shift letters (ٹ ڈ ڑ ں ھ ...) after all the others.
+static const LessonDef kLessonsUr[] = {
+	{NewKeys, "فج", 8},   // index-finger anchors (F/J bumps)
+	{NewKeys, "دک", 8},   // middle fingers
+	{NewKeys, "سل", 8},   // ring fingers
+	{NewKeys, "ا؛", 8},   // little fingers
+	{NewKeys, "گح", 8},   // index fingers reach inward
+	{Review, "", 10},     // whole home row
+	{NewKeys, "یر", 10},  // top row: I, R
+	{NewKeys, "تہ", 10},  // T, O
+	{NewKeys, "وے", 10},  // W, Y
+	{Review, "", 12},
+	{NewKeys, "نم", 12},  // bottom row: N, M
+	{NewKeys, "بپ", 12},  // B, P
+	{NewKeys, "عء", 12},  // E, U
+	{Review, "", 12},
+	{NewKeys, "شچ", 14},  // X, C
+	{NewKeys, "قطز", 14}, // Q, V, Z
+	{Review, "", 14},     // every letter without Shift
+	{NewKeys, "ٹڈڑ", 14}, // Shift + T, D, R
+	{NewKeys, "ںھ", 14},  // Shift + N, H
+	{NewKeys, "آئؤ", 15}, // Shift + A, U, W
+	{NewKeys, "خغص", 15}, // Shift + K, G, S
+	{NewKeys, "ضثذ", 15}, // Shift + J, C, Z
+	{NewKeys, "ظژ", 15},  // Shift + V, X
+	{Review, "", 15},     // every letter
+	{NewKeys, "،۔؟", 15},
+	{Final, "", 18},
+};
+
 static const char *const kNamesEn[] = {"Sam", "Ali", "Omar", "Sara", "Lina", "Adam", "Maya",
 				       "Noah", "Zaid", "Huda", "Yusuf", "Mona", "Hana", "Leo",
 				       "Amir", "Rosa", "Kofi", "Iris", "Jack", "Emma"};
@@ -67,9 +99,15 @@ static const char *const kContractionsEn[] = {"it's", "let's", "don't", "can't",
 					      "we're", "you're", "that's", "isn't", "he's",
 					      "she's", "what's", "I'll", "won't"};
 
-int Count(Lang lang) { return lang == LangAr ? ARRAY_LEN(kLessonsAr) : ARRAY_LEN(kLessonsEn); }
+int Count(Lang lang)
+{
+	return lang == LangUr ? ARRAY_LEN(kLessonsUr) : lang == LangAr ? ARRAY_LEN(kLessonsAr) : ARRAY_LEN(kLessonsEn);
+}
 
-const LessonDef &Get(Lang lang, int i) { return lang == LangAr ? kLessonsAr[i] : kLessonsEn[i]; }
+const LessonDef &Get(Lang lang, int i)
+{
+	return lang == LangUr ? kLessonsUr[i] : lang == LangAr ? kLessonsAr[i] : kLessonsEn[i];
+}
 
 bool CharSet::Has(u32 cp) const
 {
@@ -114,7 +152,11 @@ void NewChars(Lang lang, int lesson, CharSet *out)
 	AddUtf8(out, Get(lang, lesson).keys);
 }
 
-static bool IsLetter(u32 cp) { return text::IsLatinLetter(cp) || text::IsArabicLetter(cp); }
+static bool IsLetter(u32 cp)
+{
+	return text::IsLatinLetter(cp) || text::IsArabicLetter(cp) || text::IsUrduLetter(cp);
+}
+static bool IsFullStop(u32 cp) { return cp == '.' || cp == 0x06D4; }  // . or Urdu ۔
 static bool IsDigit(u32 cp) { return cp >= '0' && cp <= '9'; }
 
 int LastHomeRowLesson(Lang lang)
@@ -333,13 +375,13 @@ struct Gen
 		}
 	}
 
-	// Adapts a sentence to the keys taught so far: drops a final '.' and
+	// Adapts a sentence to the keys taught so far: drops a final full stop and
 	// lower-cases the first letter if those have not been taught yet.
 	bool SentenceOk(const char *s, bool needFresh, int *n, u32 *cps, bool *adapted)
 	{
 		*n = text::Utf8Decode(s, cps, kMaxLineLen);
 		*adapted = false;
-		if (*n > 1 && cps[*n - 1] == '.' && !allowed.Has('.')) {
+		if (*n > 1 && IsFullStop(cps[*n - 1]) && !allowed.Has(cps[*n - 1])) {
 			(*n)--;
 			*adapted = true;
 		}
@@ -401,7 +443,7 @@ void Generate(Lang lang, int lesson, u32 seed, Exercise *out)
 		g.freshLetters.Add(g.fresh.cps[i]);
 	MemZero(g.usedSentence, sizeof g.usedSentence);
 	g.words = content::WordsFor(lang, &g.wordCount);
-	g.target = lang == LangAr ? 28 : 32;
+	g.target = lang == LangEn ? 32 : 28;
 
 	// For review lessons, emphasise the keys from the two previous new-key lessons.
 	CharSet recent;

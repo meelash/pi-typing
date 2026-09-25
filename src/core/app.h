@@ -48,7 +48,8 @@ private:
 	void Go(Screen s);
 	void Save();
 	Profile &Player() { return m_store.players[m_player]; }
-	bool Rtl() const { return m_lang == LangAr; }
+	bool Rtl() const { return m_lang != LangEn; }
+	static const char *LangName(Lang lang);  // "English", "العربية", "اردو"
 	const char *T(StrId id) const { return Str(id, m_lang); }
 
 	// --- input per screen
@@ -80,6 +81,11 @@ private:
 	void DrawBackground(Canvas &c);
 	void DrawHeader(Canvas &c, const char *title);
 	void DrawHint(Canvas &c, const char *hint);
+	// Arabic and Urdu versions of a string side by side, centred on cx (screens before a course is chosen).
+	void DrawArUr(Canvas &c, StrId id, font::Size size, int cx, int y, Color color);
+	// English, Urdu and Arabic in one row, centred on cx.
+	void DrawAllLangs(Canvas &c, StrId id, font::Size size, int cx, int y, Color color);
+	void DrawName(Canvas &c, const Profile &p, font::Size size, int x, int y, Color color, Align align);
 	void DrawAvatar(Canvas &c, int cx, int cy, int r, const Profile &p);
 	void DrawStars(Canvas &c, int cx, int cy, int r, int filled, int gap);
 	void DrawKeyboard(Canvas &c, int x, int y, int unit, u8 target, u8 shiftKey, bool pulse);
@@ -136,7 +142,7 @@ private:
 	u8 m_nameColor;
 
 	// Toast message
-	char m_toast[128];
+	char m_toast[192];
 	Color m_toastColor;
 	u32 m_toastUntil;
 

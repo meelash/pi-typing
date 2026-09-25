@@ -61,6 +61,11 @@ DBG_PATCHES := $(FIX_PATCHES) $(sort $(wildcard patches/circle-debug-*.patch))
 $(CIRCLE)/Rules.mk:
 	git submodule update --init external/circle
 
+# HarfBuzz and stb_truetype draw Urdu in Nastaliq (pinned submodules).
+TEXT_LIBS := external/harfbuzz/src/harfbuzz.cc external/stb/stb_truetype.h
+$(TEXT_LIBS):
+	git submodule update --init external/harfbuzz external/stb
+
 # $(call build_circle,<copy dir>,<extra configure options>,<patches>)
 define build_circle
 	rm -rf $(1)
@@ -83,7 +88,7 @@ $(BUILD)/circle-debug.stamp: $(TC_PREFIX)gcc $(CIRCLE)/Rules.mk $(DBG_PATCHES)
 	touch $@
 
 # --- kernel ----------------------------------------------------------------
-kernel: $(BUILD)/circle-pi.stamp
+kernel: $(BUILD)/circle-pi.stamp $(TEXT_LIBS)
 	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-pi BUILD=$(BUILD)/pi
 	mkdir -p $(BUILD)/sdcard
@@ -121,7 +126,7 @@ test:
 	tests/sim/run.sh
 
 # QEMU needs Circle built with --qemu (different SD card controller).
-qemu: $(BUILD)/circle-qemu.stamp
+qemu: $(BUILD)/circle-qemu.stamp $(TEXT_LIBS)
 	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-qemu BUILD=$(BUILD)/qemu-obj
 	mkdir -p $(BUILD)/qemu && mv src/pi/kernel8.img $(BUILD)/qemu/
@@ -131,7 +136,7 @@ qemu: $(BUILD)/circle-qemu.stamp
 	@echo "Run: scripts/qemu-run.sh (then scripts/qemu-drive.py build/qemu shot:screen)"
 
 # Same as the Pi kernel, plus the USB logging patches and debug-level logging.
-debug: $(BUILD)/circle-debug.stamp
+debug: $(BUILD)/circle-debug.stamp $(TEXT_LIBS)
 	rm -f src/pi/kernel8.*  # shared output of all variants: always relink
 	$(MAKE) -C src/pi CIRCLEHOME=$(BUILD)/circle-debug BUILD=$(BUILD)/debug-obj EXTRA_DEFINES=-DDIAG_LOG_LEVEL=LogDebug
 	mkdir -p $(BUILD)/debug && mv src/pi/kernel8.img $(BUILD)/debug/

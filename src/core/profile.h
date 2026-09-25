@@ -23,6 +23,7 @@ struct Profile
 	char name[kMaxNameBytes];  // UTF-8
 	u8 color;
 	u8 lang;        // last course used
+	u8 nameLang;    // layout the name was typed with (Urdu names are drawn in Nastaliq)
 	u32 points;
 	u32 badges;     // bit per BadgeId
 	u32 keys;       // correct keys typed in lessons

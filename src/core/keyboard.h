@@ -1,11 +1,12 @@
 // Physical keyboard model: key positions, home-row finger assignments and
-// the character each key produces in the English (US) and Arabic (101) layouts.
+// the character each key produces in the English (US), Arabic (101) and Urdu
+// (CRULP phonetic, as in xkb pk(urd-phonetic)) layouts.
 // The layouts are implemented here, from raw USB HID usage codes, so the
 // language can be switched per lesson without any OS keymap support.
 #pragma once
 #include "base.h"
 
-enum Lang : u8 { LangEn, LangAr, LangCount };
+enum Lang : u8 { LangEn, LangAr, LangUr, LangCount };
 
 enum Finger : u8 { LPinky, LRing, LMiddle, LIndex, Thumb, RIndex, RMiddle, RRing, RPinky, FingerCount };
 

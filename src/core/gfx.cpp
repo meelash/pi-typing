@@ -281,7 +281,7 @@ void Canvas::DrawGlyph(const text::PlacedGlyph &pg, int x, int y, Color c)
 	if (!g || !g->w)
 		return;
 	const u8 *bits = pg.face->bits + g->off;
-	int gx = x + g->x, gy = y + g->y;
+	int gx = x + g->x, gy = y + pg.y + g->y;
 	int x0 = Max(gx, m_cx0), y0 = Max(gy, m_cy0);
 	int x1 = Min(gx + g->w, m_cx1), y1 = Min(gy + g->h, m_cy1);
 	for (int py = y0; py < y1; py++) {
@@ -316,9 +316,18 @@ int Canvas::Text(const char *s, font::Size size, int x, int y, Color c, Align al
 int Canvas::TextCentered(const char *s, font::Size size, int x, int top, int h, Color c, Align align,
 			 bool rtl)
 {
-	// Centre on the Latin cap-ish height so mixed scripts line up.
+	// Centre on the Latin cap-ish height so mixed scripts line up. Nastaliq
+	// words vary a lot in height, so they are centred on their actual ink.
+	static text::Layout l;
+	text::LayoutUtf8(s, size, rtl, &l);
 	const font::Face &f = font::g_Latin[size];
 	int textH = f.ascent * 3 / 4;
 	int baseline = top + (h + textH) / 2;
-	return Text(s, size, x, baseline, c, align, rtl);
+	if (l.nastaliq)
+		baseline = top + (h + l.ascent - l.descent) / 2;
+	if (align == AlignCenter)
+		x -= l.width / 2;
+	else if (align == AlignRight)
+		x -= l.width;
+	return DrawLayout(l, x, baseline, c);
 }

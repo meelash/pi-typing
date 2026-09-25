@@ -9,7 +9,13 @@ int Profile::CourseStars(Lang lang) const
 	return s;
 }
 
-int Profile::TotalStars() const { return CourseStars(LangEn) + CourseStars(LangAr); }
+int Profile::TotalStars() const
+{
+	int s = 0;
+	for (int l = 0; l < LangCount; l++)
+		s += CourseStars((Lang)l);
+	return s;
+}
 
 int Profile::Unlocked(Lang lang) const
 {
@@ -97,7 +103,7 @@ struct Writer
 	}
 };
 
-const char *const kLangKey[LangCount] = {"en.", "ar."};
+const char *const kLangKey[LangCount] = {"en.", "ar.", "ur."};
 
 void ParseList(const char *s, u8 *out, int n)
 {
@@ -125,6 +131,7 @@ int Store::Serialize(char *buf, int cap) const
 		w.Put("\n");
 		w.Field("color", pr.color);
 		w.Field("lang", pr.lang);
+		w.Field("namelang", pr.nameLang);
 		w.Field("points", pr.points);
 		w.Field("badges", pr.badges);
 		w.Field("keys", pr.keys);
@@ -194,6 +201,8 @@ bool Store::Parse(const char *buf, int len)
 			cur->color = (u8)v;
 		else if (StrEq(key, "lang") && num)
 			cur->lang = (u8)(v < LangCount ? v : 0);
+		else if (StrEq(key, "namelang") && num)
+			cur->nameLang = (u8)(v < LangCount ? v : 0);
 		else if (StrEq(key, "points") && num)
 			cur->points = v;
 		else if (StrEq(key, "badges") && num)

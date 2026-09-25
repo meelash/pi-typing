@@ -1,4 +1,5 @@
 #include "text.h"
+#include "nastaliq.h"
 
 namespace font {
 
@@ -28,6 +29,30 @@ bool IsArabic(u32 cp)
 }
 
 bool IsArabicLetter(u32 cp) { return cp >= 0x0621 && cp <= 0x064A && cp != kTatweel; }
+
+bool IsUrduLetter(u32 cp)
+{
+	switch (cp) {
+	case 0x0679: case 0x067E: case 0x0686: case 0x0688: case 0x0691: case 0x0698:  // ٹ پ چ ڈ ڑ ژ
+	case 0x06A9: case 0x06AF: case 0x06BA: case 0x06BE: case 0x06C1: case 0x06C3:  // ک گ ں ھ ہ ۃ
+	case 0x06CC: case 0x06D2:                                                      // ی ے
+		return true;
+	default:
+		return false;
+	}
+}
+
+static bool g_urdu;
+
+void SetUrduContext(bool on) { g_urdu = on; }
+bool UrduContext() { return g_urdu; }
+
+// Characters only used in Urdu text (letters, ۔ and Urdu digits).
+static bool IsUrduOnly(u32 cp) { return cp >= 0x0670 && cp <= 0x06FF; }
+static bool IsDigitCp(u32 cp)
+{
+	return (cp >= '0' && cp <= '9') || (cp >= 0x0660 && cp <= 0x0669) || (cp >= 0x06F0 && cp <= 0x06F9);
+}
 
 bool IsLatinLetter(u32 cp) { return (cp >= 'a' && cp <= 'z') || (cp >= 'A' && cp <= 'Z'); }
 
@@ -165,12 +190,11 @@ enum Dir : u8 { DirL, DirR, DirN };
 
 static Dir ClassOf(u32 cp)
 {
-	if (IsArabic(cp) && !(cp >= 0x0660 && cp <= 0x0669))
+	if (IsArabic(cp) && !IsDigitCp(cp))
 		return DirR;
 	if (cp == 0xD7 || cp == 0xF7)  // × ÷ are neutral symbols, not letters
 		return DirN;
-	if ((cp >= '0' && cp <= '9') || IsLatinLetter(cp) || (cp >= 0x0660 && cp <= 0x0669) ||
-	    (cp >= 0xC0 && cp < 0x0600))
+	if (IsDigitCp(cp) || IsLatinLetter(cp) || (cp >= 0xC0 && cp < 0x0600))
 		return DirL;
 	return DirN;
 }
@@ -181,6 +205,7 @@ struct Item
 	s16 logical;
 	u8 span;
 	u8 level;
+	bool run;     // Nastaliq run of span characters, shaped as a unit
 };
 
 void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
@@ -190,26 +215,41 @@ void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
 	n = Min(n, kMaxGlyphs);
 
 	// Resolve directions: neutrals take the surrounding strong direction when
-	// both sides agree, otherwise the paragraph direction.
+	// both sides agree, otherwise the paragraph direction. Numbers count as
+	// right-to-left here (UAX #9 rule N1), so "حروف ۱۲ × ۲" keeps its order.
 	for (int i = 0; i < n; i++)
 		dirs[i] = ClassOf(cps[i]);
 	Dir para = rtl ? DirR : DirL;
+	auto strong = [&](int k) { return IsDigitCp(cps[k]) ? DirR : ClassOf(cps[k]); };
 	for (int i = 0; i < n; i++) {
 		if (dirs[i] != DirN)
 			continue;
+		// A separator inside a number ("1-5", "10/13") stays part of it (rule W4).
+		u32 c = cps[i];
+		if ((c == '-' || c == '/' || c == '.' || c == ',' || c == ':') && i > 0 && i + 1 < n &&
+		    IsDigitCp(cps[i - 1]) && IsDigitCp(cps[i + 1])) {
+			dirs[i] = DirL;
+			continue;
+		}
 		Dir before = para, after = para;
 		for (int k = i - 1; k >= 0; k--)
 			if (ClassOf(cps[k]) != DirN) {
-				before = ClassOf(cps[k]);
+				before = strong(k);
 				break;
 			}
 		for (int k = i + 1; k < n; k++)
 			if (ClassOf(cps[k]) != DirN) {
-				after = ClassOf(cps[k]);
+				after = strong(k);
 				break;
 			}
 		dirs[i] = (before == after) ? before : para;
 	}
+
+	// Embedding levels: RTL paragraph = 1 with LTR runs at 2; LTR paragraph = 0 with RTL runs at 1.
+	auto levelOf = [&](int i) -> u8 { return dirs[i] == DirR ? 1 : (rtl ? 2 : 0); };
+	bool urdu = g_urdu;
+	for (int i = 0; i < n && !urdu; i++)
+		urdu = IsUrduOnly(cps[i]);
 
 	// Shape in logical order.
 	int m = 0;
@@ -219,9 +259,20 @@ void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
 		it.logical = (s16)i;
 		it.span = 1;
 		it.cp = c;
-		// Embedding levels: RTL paragraph = 1 with LTR runs at 2; LTR paragraph = 0 with RTL runs at 1.
-		it.level = dirs[i] == DirR ? 1 : (rtl ? 2 : 0);
+		it.level = levelOf(i);
+		it.run = false;
 
+		if (urdu && IsArabic(c)) {
+			// Words and the spaces between them, at one level, go to the Nastaliq shaper together.
+			int j = i + 1;
+			while (j < n && levelOf(j) == it.level &&
+			       (IsArabic(cps[j]) || (cps[j] == ' ' && j + 1 < n && IsArabic(cps[j + 1]) && levelOf(j + 1) == it.level)))
+				j++;
+			it.run = true;
+			it.span = (u8)(j - i);
+			i = j - 1;
+			continue;
+		}
 		if (IsArabicLetter(c)) {
 			bool joinPrev = i > 0 && JoinsForward(cps[i - 1]) && JoinsBackward(c);
 			u32 lig = (c == kLam && i + 1 < n) ? LamAlefLigature(cps[i + 1]) : 0;
@@ -262,10 +313,38 @@ void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
 	const font::Face &latin = font::g_Latin[size];
 	const font::Face &arabic = font::g_Arabic[size];
 	out->count = 0;
+	out->nastaliq = false;
 	out->ascent = latin.ascent;
 	out->descent = latin.descent;
 	int x = 0;
 	for (int i = 0; i < m; i++) {
+		if (items[i].run) {
+			const nastaliq::Glyph *gs;
+			int w, count = nastaliq::Shape(cps + items[i].logical, items[i].span, size, items[i].level & 1, &gs, &w);
+			const font::Face *nf = &nastaliq::Face(size);
+			for (int k = 0; k < count && out->count < kMaxGlyphs; k++) {
+				const nastaliq::Glyph &sg = gs[k];
+				PlacedGlyph &pg = out->glyphs[out->count++];
+				pg.glyph = sg.glyph;
+				pg.face = nf;
+				pg.x = (s16)(x + sg.x);
+				pg.y = sg.y;
+				pg.logical = (s16)(items[i].logical + sg.logical);
+				pg.span = sg.span;
+				if (sg.glyph->h) {
+					out->ascent = Max<int>(out->ascent, -(sg.y + sg.glyph->y));
+					out->descent = Max<int>(out->descent, sg.y + sg.glyph->y + sg.glyph->h);
+				}
+			}
+			if (count >= 0) {
+				out->nastaliq = true;
+				x += w;
+				continue;
+			}
+			items[i].cp = '?';  // could not shape: show a placeholder
+		}
+		if (out->count >= kMaxGlyphs)
+			break;
 		const font::Face *face = IsArabic(items[i].cp) ? &arabic : &latin;
 		const font::Glyph *g = font::Find(*face, items[i].cp);
 		if (!g) {
@@ -285,6 +364,7 @@ void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
 		pg.glyph = g;
 		pg.face = face;
 		pg.x = (s16)x;
+		pg.y = 0;
 		pg.logical = items[i].logical;
 		pg.span = items[i].span;
 		x += g ? g->adv : 0;

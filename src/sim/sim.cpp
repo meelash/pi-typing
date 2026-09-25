@@ -6,7 +6,7 @@
 //   key <name>          enter esc tab space backspace delete left right up down f2 caps y r n
 //   shift               next "type" uses the given shift side: shift left|right
 //   type <text>         types UTF-8 text using the current course layout
-//   typeas <en|ar> <t>  types using a specific layout
+//   typeas <en|ar|ur> <t>  types using a specific layout
 //   solve [n]           types the next n expected characters correctly (default: whole lesson)
 //   typo                presses a wrong key once
 //   wait <ms>           advances virtual time
@@ -129,7 +129,8 @@ int main(int argc, char **argv)
 			for (int i = 0; i < curriculum::Count((Lang)l); i++) {
 				curriculum::Exercise ex;
 				curriculum::Generate((Lang)l, i, 7, &ex);
-				printf("== %s lesson %d (%s)\n", l ? "ar" : "en", i + 1, curriculum::Get((Lang)l, i).keys);
+				static const char *const kLang[LangCount] = {"en", "ar", "ur"};
+				printf("== %s lesson %d (%s)\n", kLang[l], i + 1, curriculum::Get((Lang)l, i).keys);
 				for (int k = 0; k < ex.lines; k++) {
 					char buf[256];
 					text::Utf8Encode(ex.text[k], ex.len[k], buf, sizeof buf);
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
 		} else if (!strcmp(line, "type") || !strcmp(line, "typeas")) {
 			Lang lang = app.CourseLang();
 			if (!strcmp(line, "typeas")) {
-				lang = !strncmp(arg, "ar", 2) ? LangAr : LangEn;
+				lang = !strncmp(arg, "ar", 2) ? LangAr : !strncmp(arg, "ur", 2) ? LangUr : LangEn;
 				arg += 3;
 			}
 			u32 cps[256];

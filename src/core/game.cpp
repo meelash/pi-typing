@@ -337,7 +337,7 @@ void App::DrawGameIntro(Canvas &c)
 			       on ? 0xFFFFFFFF : (i == 1 && !wordsOk ? pal::Faint : pal::Ink), AlignCenter, rtl);
 	}
 	// Start level: Up / Down, up to one past the best level beaten with these letters.
-	char buf[96], num[16];
+	char buf[192], num[16];
 	buf[0] = 0;
 	StrAppend(buf, T(S_StartLevel), sizeof buf);
 	StrAppend(buf, " ", sizeof buf);
@@ -396,7 +396,7 @@ void App::DrawGame(Canvas &c)
 			c.FillCircle((int)p.x, (int)p.y, 5, WithAlpha(p.color, (u32)Min(255, p.life / 3)));
 	}
 	// HUD: score, level, lives.
-	char buf[64], num[16];
+	char buf[192], num[16];
 	c.FillRoundRect(20, 16, 250, 60, 30, 0xC0FFFFFF);
 	buf[0] = 0;
 	StrAppend(buf, T(S_Score), sizeof buf);
@@ -409,12 +409,12 @@ void App::DrawGame(Canvas &c)
 	StrAppend(buf, " ", sizeof buf);
 	FormatNum(num, sizeof num, (u32)m_level);
 	StrAppend(buf, num, sizeof buf);
-	c.FillRoundRect(W / 2 - 110, 16, 220, 60, 30, 0xC0FFFFFF);
-	c.TextCentered(buf, font::Body, W / 2, 12, 56, pal::Navy, AlignCenter, rtl);
+	c.FillRoundRect(W / 2 - 110, 16, 220, 72, 30, 0xC0FFFFFF);
+	c.TextCentered(buf, font::Body, W / 2, 14, 54, pal::Navy, AlignCenter, rtl);
 	// Progress towards the next level.
 	for (int i = 0; i < kPopsPerLevel; i++) {
 		int dx = (i - kPopsPerLevel / 2) * 16 + 8;
-		c.FillCircle(W / 2 + (rtl ? -dx : dx), 64, 5, i < m_levelPops ? pal::Accent : 0xFFD5D9E6);
+		c.FillCircle(W / 2 + (rtl ? -dx : dx), 74, 5, i < m_levelPops ? pal::Accent : 0xFFD5D9E6);
 	}
 	c.FillRoundRect(W - 230, 16, 210, 60, 30, 0xC0FFFFFF);
 	for (int i = 0; i < 3; i++)

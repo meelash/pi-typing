@@ -1,3 +1,9 @@
 [submodule "external/circle"]
 	path = external/circle
 	url = https://github.com/rsta2/circle
+[submodule "external/harfbuzz"]
+	path = external/harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz
+[submodule "external/stb"]
+	path = external/stb
+	url = https://github.com/nothings/stb

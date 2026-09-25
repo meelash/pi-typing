@@ -25,6 +25,9 @@ struct Face
 
 extern const Face g_Latin[SizeCount];
 extern const Face g_Arabic[SizeCount];
+// Noto Nastaliq Urdu font file, used by nastaliq.cpp.
+extern const u8 g_NastaliqTtf[];
+extern const u32 g_NastaliqTtfSize;
 
 const Glyph *Find(const Face &face, u32 cp);
 

@@ -1,21 +1,21 @@
-# Typing Adventure · مغامرة الكتابة
+# Typing Adventure · مغامرة الكتابة · ٹائپنگ کی مہم
 
-A touch-typing tutor for children, in **English and Arabic**, that runs directly
+A touch-typing tutor for children, in **English, Arabic and Urdu**, that runs directly
 on a **Raspberry Pi 3 B+** with **no operating system**. The SD card holds the
 Pi's boot firmware, two small text files and one program. That program
 drives the screen, keyboard, SD card and sound itself.
 
 ![Typing lesson](docs/screenshots/typing-en.png)
 
-| Arabic lesson | Lesson map | Results |
-|---|---|---|
-| ![Arabic](docs/screenshots/typing-ar.png) | ![Map](docs/screenshots/map.png) | ![Results](docs/screenshots/results.png) |
+| Arabic lesson | Urdu lesson (Nastaliq) | Lesson map | Results |
+|---|---|---|---|
+| ![Arabic](docs/screenshots/typing-ar.png) | ![Urdu](docs/screenshots/typing-ur.png) | ![Map](docs/screenshots/map.png) | ![Results](docs/screenshots/results.png) |
 
 ## What is on the SD card
 
 | File | What it is |
 |---|---|
-| `kernel8.img` | This program (about 2 MB, mostly pre-rendered fonts) |
+| `kernel8.img` | This program (about 3 MB, mostly fonts) |
 | `bootcode.bin`, `start.elf`, `fixup.dat` | Raspberry Pi GPU boot firmware (closed source, required by every Pi) |
 | `LICENCE.broadcom` | Licence for the firmware files |
 | `config.txt`, `cmdline.txt` | Boot settings |
@@ -50,6 +50,12 @@ The goal is a machine that can only ever be a typing tutor.
 - **Pinned, checksummed inputs.** The build checks the SHA-256 of the
   compiler download and of the GPU firmware (`firmware/SHA256SUMS`, taken
   from the Raspberry Pi firmware revision that Circle is tested with).
+- **Third-party code is pinned and sees no outside input.** To draw Urdu,
+  the kernel includes [HarfBuzz](https://github.com/harfbuzz/harfbuzz) (text
+  shaping) and [stb_truetype](https://github.com/nothings/stb) (glyph
+  rasteriser), both git submodules pinned to a fixed commit. HarfBuzz is
+  built with only its OpenType shaper (no files, threads or environment
+  variables). Both only ever read the one font built into the kernel.
 
 Limits worth knowing:
 
@@ -77,9 +83,9 @@ To build it yourself:
    formatted as FAT32.
 2. Put the card in a Pi 3 B+, connect an HDMI screen and a USB keyboard, and
    power on.
-3. Choose **New player**, type a name (**Tab** switches between English and
-   Arabic letters), and pick a colour with **Left/Right**.
-4. Choose the **English** or **العربية** course and start lesson 1.
+3. Choose **New player**, type a name (**Tab** switches between English,
+   Arabic and Urdu letters), and pick a colour with **Left/Right**.
+4. Choose the **English**, **العربية** or **اردو** course and start lesson 1.
 
 Keys: **arrows** move, **Enter** chooses, **Esc** goes back or pauses a lesson,
 **F2** turns sound on or off. On the players screen, **Delete** removes a
@@ -104,28 +110,32 @@ not be recognised. If a keyboard still isn't found after about 6 seconds,
 the screen shows a USB diagnostic log.
 
 **Keyboard layout.** The program reads raw key positions and applies the US
-English layout or the standard Arabic (101) layout itself. A bilingual
+English layout, the standard Arabic (101) layout or the Urdu phonetic
+layout (CRULP, the same as `pk(urd-phonetic)` on Linux) itself. A bilingual
 keyboard with Arabic letters printed on the keys matches the on-screen
-keyboard exactly.
+keyboard exactly. The Urdu phonetic layout puts each letter on the English
+key that sounds alike (ا on A, ب on B, پ on P), so an ordinary English
+keyboard works for Urdu.
 
 ## How the course teaches
 
-Both courses follow the classic touch-typing progression:
+All three courses follow the classic touch-typing progression:
 
 1. **Home row first**, starting from the index-finger anchor keys with the
-   bumps: **F J** in English, **ب ت** in Arabic. Then one finger pair at a time
-   out to the little fingers.
+   bumps: **F J** in English, **ب ت** in Arabic, **ف ج** in Urdu. Then one
+   finger pair at a time out to the little fingers.
 2. **Top row, then bottom row**, two keys at a time by finger. The most frequent
    letters come first, so real words are available early.
-3. A **review lesson** after each group, then **Shift** (English capitals, or
-   Arabic أ إ آ), **punctuation**, **numbers**, and a **final challenge** of
+3. A **review lesson** after each group, then **Shift** (English capitals,
+   Arabic أ إ آ, or the Urdu Shift letters such as ٹ ڈ ڑ ں ھ), **punctuation**,
+   **numbers** (English and Arabic only for now), and a **final challenge** of
    whole sentences.
 
 Every new-key lesson moves from drills of the new keys (`fff jjj fjf`), to
 groups mixed with keys already learned, to **real words that use only letters
-already taught**. Arabic words and sentences are spelled correctly. Words that
-need a hamza form only appear after the hamza lesson, and full stops appear
-only after the punctuation lesson.
+already taught**. Arabic and Urdu words and sentences are spelled correctly.
+Words that need a hamza form only appear after the hamza lesson, and full
+stops appear only after the punctuation lesson.
 
 During a lesson:
 
@@ -180,8 +190,9 @@ tests/sim/     simulator test scripts
 patches/       changes to Circle (circle-fix-*: every build; circle-debug-*: make debug only)
 boot/          config.txt and cmdline.txt for the card
 firmware/      checksums of the Raspberry Pi boot firmware
-assets/fonts/  Andika (Latin, designed for early readers) and Noto Naskh Arabic
-external/      Circle (git submodule, pinned to release Step51.1, kept unmodified)
+assets/fonts/  Andika (Latin, designed for early readers), Noto Naskh Arabic, Noto Nastaliq Urdu
+external/      git submodules, kept unmodified: Circle (release Step51.1),
+               HarfBuzz (14.5.0) and stb (stb_truetype)
 ```
 
 The build never changes `external/circle`. Each variant (Pi, QEMU, debug)
@@ -191,15 +202,24 @@ and unused, instead of dropping it. Dropping it freed its USB address while
 the device still answered there, so a keyboard plugged in later could get the
 same address and neither would work.
 
-The fonts are pre-rendered to anti-aliased bitmaps when you build
-(`scripts/gen_fonts.py`), so the Pi needs no font engine. Arabic letter joining,
-the lam-alef ligature and right-to-left layout are handled in
-`src/core/text.cpp`.
+The Latin and Arabic fonts are pre-rendered to anti-aliased bitmaps when you
+build (`scripts/gen_fonts.py`). Arabic letter joining, the lam-alef ligature
+and right-to-left layout are handled in `src/core/text.cpp`.
+
+Urdu is written in **Nastaliq**, where letters sit on a sloping baseline and
+change shape and position with their neighbours. That can't be pre-rendered
+letter by letter, so the Noto Nastaliq Urdu font is built into the kernel as
+is. `src/core/nastaliq.cpp` shapes Urdu text with HarfBuzz and rasterises the
+glyphs with stb_truetype when they are first needed. Both results are cached:
+a new string takes about 0.15 ms on a desktop PC (so roughly 1–3 ms on the
+Pi) the first time it appears, and nothing after that.
 
 ## Licences
 
 - Circle is GPL-3.0, so the built `kernel8.img` is GPL-3.0 as a combined work.
-- Andika and Noto Naskh Arabic are under the SIL Open Font License 1.1
-  (`assets/fonts/`).
+- Andika, Noto Naskh Arabic and Noto Nastaliq Urdu are under the SIL Open
+  Font License 1.1 (`assets/fonts/`).
+- HarfBuzz is under the MIT ("Old MIT") licence; stb_truetype is public
+  domain (or MIT).
 - The Raspberry Pi firmware is under Broadcom's redistribution licence
   (`LICENCE.broadcom`).

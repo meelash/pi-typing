@@ -142,11 +142,16 @@ void App::AwardBadges(u32 before)
 		if (cond)
 			p.badges |= 1u << b;
 	};
-	give(B_FirstLesson, p.Completed(LangEn) + p.Completed(LangAr) > 0);
+	int completed = 0, courses = 0;
+	for (int l = 0; l < LangCount; l++) {
+		completed += p.Completed((Lang)l);
+		courses += p.CourseStars((Lang)l) > 0;
+	}
+	give(B_FirstLesson, completed > 0);
 	give(B_Combo50, p.bestCombo >= 50);
 	give(B_Combo100, p.bestCombo >= 100);
 	give(B_Stars30, p.TotalStars() >= 30);
-	give(B_Bilingual, p.CourseStars(LangEn) > 0 && p.CourseStars(LangAr) > 0);
+	give(B_Bilingual, courses >= 2);
 	for (int l = 0; l < LangCount; l++) {
 		Lang lang = (Lang)l;
 		const CourseProgress &cp = p.course[l];
@@ -342,7 +347,7 @@ void App::DrawHands(Canvas &c, int top, int active)
 void App::DrawIntro(Canvas &c)
 {
 	DrawBackground(c);
-	char title[128];
+	char title[192];
 	LessonLabel(m_lesson, title, sizeof title);
 	DrawHeader(c, title);
 	bool rtl = Rtl();
@@ -400,12 +405,12 @@ void App::DrawTyping(Canvas &c)
 {
 	DrawBackground(c);
 	bool rtl = Rtl();
-	char title[128];
+	char title[192];
 	LessonLabel(m_lesson, title, sizeof title);
 	c.FillRect(0, 0, W, 72, pal::Navy);
 	c.TextCentered(title, font::Body, rtl ? W - 30 : 30, 0, 72, 0xFFFFFFFF, rtl ? AlignRight : AlignLeft, rtl);
 	// Combo and points on the trailing side.
-	char num[16], buf[64];
+	char num[16], buf[192];
 	FormatNum(num, sizeof num, (u32)m_points);
 	int px = rtl ? 30 : W - 30;
 	c.TextCentered(num, font::Title, px, 0, 72, pal::Gold, rtl ? AlignLeft : AlignRight);
@@ -540,7 +545,7 @@ void App::DrawTyping(Canvas &c)
 void App::DrawResults(Canvas &c)
 {
 	DrawBackground(c);
-	char title[128];
+	char title[192];
 	LessonLabel(m_lesson, title, sizeof title);
 	DrawHeader(c, title);
 	bool rtl = Rtl();

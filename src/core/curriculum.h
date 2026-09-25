@@ -1,7 +1,7 @@
 // Touch-typing curriculum and practice generation.
 //
-// Both courses follow the classic touch-typing progression:
-//  1. Home row, starting from the index-finger anchor keys (F/J, ب/ت), then
+// All courses follow the classic touch-typing progression:
+//  1. Home row, starting from the index-finger anchor keys (F/J, ب/ت, ف/ج), then
 //     adding one finger pair at a time outward to the little fingers.
 //  2. Top row and bottom row keys, introduced in pairs by finger, with the
 //     most frequent letters first so real words become available early.

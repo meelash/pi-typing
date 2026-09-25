@@ -1,4 +1,4 @@
-Typing Adventure {{VERSION}}: a touch-typing tutor for children, in English and Arabic, for the **Raspberry Pi 3 B+**. It runs with no operating system and has no network, Wi-Fi or Bluetooth support.
+Typing Adventure {{VERSION}}: a touch-typing tutor for children, in English, Arabic and Urdu, for the **Raspberry Pi 3 B+**. It runs with no operating system and has no network, Wi-Fi or Bluetooth support.
 
 Built from commit {{COMMIT}}.
 
