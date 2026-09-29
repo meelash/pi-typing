@@ -216,11 +216,21 @@ void LayoutText(const u32 *cps, int n, font::Size size, bool rtl, Layout *out)
 
 	// Resolve directions: neutrals take the surrounding strong direction when
 	// both sides agree, otherwise the paragraph direction. Numbers count as
-	// right-to-left here (UAX #9 rule N1), so "حروف ۱۲ × ۲" keeps its order.
+	// right-to-left here (UAX #9 rule N1), so "حروف ۱۲ × ۲" keeps its order,
+	// except Western digits after left-to-right text (rule W7), so "99%   57" does too.
 	for (int i = 0; i < n; i++)
 		dirs[i] = ClassOf(cps[i]);
 	Dir para = rtl ? DirR : DirL;
-	auto strong = [&](int k) { return IsDigitCp(cps[k]) ? DirR : ClassOf(cps[k]); };
+	auto strong = [&](int k) {
+		if (!IsDigitCp(cps[k]))
+			return ClassOf(cps[k]);
+		if (cps[k] > '9')
+			return DirR;
+		for (int j = k - 1; j >= 0; j--)
+			if (ClassOf(cps[j]) != DirN && !IsDigitCp(cps[j]))
+				return ClassOf(cps[j]);
+		return para;
+	};
 	for (int i = 0; i < n; i++) {
 		if (dirs[i] != DirN)
 			continue;
