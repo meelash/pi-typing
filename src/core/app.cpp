@@ -5,6 +5,7 @@
 
 static const char kSaveFile[] = "progress.txt";
 static const int kMapPerRow = 7;
+static const int kLeft = 1 << 20;  // m_leaving once ReturnToMenu() was called
 
 App::App(Platform *platform) : m_platform(platform) {}
 
@@ -28,6 +29,8 @@ void App::Init()
 	m_lang = LangEn;
 	m_sel = 0;
 	m_confirmDelete = false;
+	m_confirmMenu = false;
+	m_leaving = -1;
 	m_diag = false;
 	m_diagScroll = 0;
 	m_toastUntil = 0;
@@ -154,6 +157,8 @@ void App::OnKey(const KeyEvent &e)
 		}
 		return;
 	}
+	if (m_leaving >= 0)
+		return;
 	if (e.usage == KeyCapsLock) {
 		m_caps = !m_caps;
 		return;
@@ -191,6 +196,12 @@ void App::Update()
 	dt = Clamp(dt, 0, 50);
 	if (m_screen == ScrSplash && m_now - m_screenStart > 2500 && m_platform->KeyboardPresent())
 		Go(ScrProfiles);
+	// Let "Going back to the menu" reach the screen before restarting.
+	if (m_leaving >= 2 && m_leaving < kLeft) {
+		m_leaving = kLeft;
+		Save();
+		m_platform->ReturnToMenu();
+	}
 	if (m_screen == ScrGame || m_screen == ScrResults)
 		UpdateGame(dt);  // also animates results confetti
 	// Chime as each result star lands (timing matches DrawResults).
@@ -227,6 +238,18 @@ void App::KeyProfiles(const KeyEvent &e)
 		}
 		if (e.usage == 0x1C || e.usage == KeyEscape || e.usage == 0x11 /* N */)
 			m_confirmDelete = false;
+		return;
+	}
+	if (m_confirmMenu) {
+		if (e.usage == KeyEnter || e.usage == KeyPadEnter || e.usage == 0x1C /* Y */) {
+			sfx::Trigger(SfxSelect);
+			m_leaving = 0;
+		}
+		m_confirmMenu = false;
+		return;
+	}
+	if (e.usage == KeyEscape && m_platform->HasMenu()) {
+		m_confirmMenu = true;
 		return;
 	}
 	int old = m_sel;
@@ -708,8 +731,9 @@ void App::DrawProfiles(Canvas &c)
 		DrawArUr(c, S_NoStorage, font::Small, W / 2, 624, pal::Bad);
 	}
 	c.FillRect(0, H - 64, W, 64, 0x14000000);
-	c.Text(Str(S_ProfilesHint, LangEn), font::Small, W / 2, H - 38, pal::InkSoft, AlignCenter);
-	DrawArUr(c, S_ProfilesHint, font::Small, W / 2, H - 10, pal::InkSoft);
+	StrId hint = m_platform->HasMenu() ? S_ProfilesHintMenu : S_ProfilesHint;
+	c.Text(Str(hint, LangEn), font::Small, W / 2, H - 38, pal::InkSoft, AlignCenter);
+	DrawArUr(c, hint, font::Small, W / 2, H - 10, pal::InkSoft);
 
 	if (m_confirmDelete && m_sel < m_store.count) {
 		c.FillRect(0, 0, W, H, 0x90202848);
@@ -720,6 +744,20 @@ void App::DrawProfiles(Canvas &c)
 		c.Text(Str(S_DeleteQuestion, LangEn), font::Body, W / 2, py + 216, pal::Bad, AlignCenter);
 		DrawArUr(c, S_DeleteQuestion, font::Body, W / 2, py + 260, pal::Bad);
 		DrawAllLangs(c, S_DeleteHint, font::Small, W / 2, py + 310, pal::InkSoft);
+	}
+	if (m_confirmMenu || m_leaving >= 0) {
+		c.FillRect(0, 0, W, H, 0x90202848);
+		int pw = 860, ph = m_leaving >= 0 ? 220 : 300, px = (W - pw) / 2, py = (H - ph) / 2;
+		c.FillRoundRect(px, py, pw, ph, 30, pal::Panel);
+		StrId title = m_leaving >= 0 ? S_GoingToMenu : S_MenuQuestion;
+		c.Text(Str(title, LangEn), font::Title, W / 2, py + 80, pal::Navy, AlignCenter);
+		DrawArUr(c, title, font::Body, W / 2, py + 150, pal::Navy);
+		if (m_leaving < 0) {
+			c.Text(Str(S_MenuHint, LangEn), font::Small, W / 2, py + 216, pal::InkSoft, AlignCenter);
+			DrawArUr(c, S_MenuHint, font::Small, W / 2, py + 262, pal::InkSoft);
+		}
+		else if (m_leaving < kLeft)
+			m_leaving++;
 	}
 }
 

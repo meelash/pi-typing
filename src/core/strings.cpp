@@ -222,6 +222,15 @@ static const StrPair kStrings[S_Count] = {
 		"استادِ اعظم"},
 	/* S_NewRank */ {"New rank: ", "رتبة جديدة: ",
 		"نیا درجہ: "},
+	/* S_ProfilesHintMenu */ {"Arrows: choose    Enter: play    Delete: remove    Esc: menu",
+				 "الأسهم: اختيار   Enter: العب   Delete: حذف   Esc: القائمة",
+		"تیر: چنیں   Enter: کھیلیں   Delete: ہٹائیں   Esc: مینو"},
+	/* S_MenuQuestion */ {"Go back to the menu?", "هل تريد العودة إلى القائمة؟",
+		"کیا مینو پر واپس جائیں؟"},
+	/* S_MenuHint */ {"Enter: yes    Esc: stay", "Enter: نعم    Esc: ابق هنا",
+		"Enter: ہاں    Esc: یہیں رہیں"},
+	/* S_GoingToMenu */ {"Going back to the menu...", "العودة إلى القائمة...",
+		"مینو پر واپس جا رہے ہیں..."},
 };
 
 const char *Str(StrId id, Lang lang) { return kStrings[id].s[lang]; }

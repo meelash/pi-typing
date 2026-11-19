@@ -13,6 +13,8 @@
 //   shot <name>         writes <outdir>/<name>.png
 //   expect <screen>     fails if the current screen is different
 //   keyboard <on|off>   whether a keyboard is plugged in (default on)
+//   menu <on|off>       whether the card has the boot menu (default off)
+//   expect-menu-return <n>  how many times the app asked to go back to the menu
 #include "../core/app.h"
 #include "../core/sfx.h"
 #include "../core/text.h"
@@ -30,7 +32,11 @@ public:
 	u32 now = 0;
 	std::string saveDir;
 	bool keyboard = true;
+	bool menu = false;    // the card has the boot menu
+	int menuReturns = 0;  // ReturnToMenu() calls
 	u32 Millis() override { return now; }
+	bool HasMenu() override { return menu; }
+	void ReturnToMenu() override { menuReturns++; }
 	u32 Random() override { return 12345; }
 	bool KeyboardPresent() override { return keyboard; }
 	bool StorageAvailable() override { return true; }
@@ -254,6 +260,13 @@ int main(int argc, char **argv)
 			std::string p = std::string(argv[2]) + "/" + arg + ".png";
 			WritePng(p.c_str(), pixels, App::W, App::H);
 			printf("shot %s\n", p.c_str());
+		} else if (!strcmp(line, "menu")) {
+			plat.menu = strcmp(arg, "off") != 0;
+		} else if (!strcmp(line, "expect-menu-return")) {
+			if (plat.menuReturns != atoi(arg)) {
+				fprintf(stderr, "%d: expected %s menu returns, got %d\n", lineNo, arg, plat.menuReturns);
+				failures++;
+			}
 		} else if (!strcmp(line, "keyboard")) {
 			plat.keyboard = strcmp(arg, "off") != 0;
 		} else if (!strcmp(line, "expect")) {

@@ -28,6 +28,15 @@ instructions, is in [`docs/`](docs/index.html) and published with GitHub Pages
 That's everything. There is no Linux, no shell, no drivers beyond the ones
 listed below, and no device-tree or overlay files.
 
+## With the boot menu
+
+Typing Adventure can also be one of several programs on a
+[pi-launcher](https://github.com/meelash/pi-launcher) card: its `kernel8.img`
+goes on that card as `apps/typing.img`. When the card has the menu
+(`apps/apps.txt` exists), the players screen shows **Esc: menu**; Esc asks
+"Go back to the menu?" and Enter restarts the Pi into the menu. Without the
+menu nothing changes. Progress stays in `progress.txt` either way.
+
 ## Security model
 
 The goal is a machine that can only ever be a typing tutor.

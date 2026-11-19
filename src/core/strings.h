@@ -103,6 +103,10 @@ enum StrId {
 	S_Rank6,
 	S_Rank7,
 	S_NewRank,
+	S_ProfilesHintMenu,
+	S_MenuQuestion,
+	S_MenuHint,
+	S_GoingToMenu,
 	S_Count
 };
 

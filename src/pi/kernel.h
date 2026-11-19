@@ -25,6 +25,7 @@ public:
 	CKernel(void);
 
 	boolean Initialize(void);
+	// Returns only to go back to the boot menu (main() then reboots).
 	void Run(void);
 
 	// Platform
@@ -35,6 +36,8 @@ public:
 	bool KeyboardPresent() override;
 	bool StorageAvailable() override;
 	int Diagnostics(const char **lines, int max) override;
+	bool HasMenu() override;
+	void ReturnToMenu() override;
 
 private:
 	void StartSound(void);
@@ -56,6 +59,8 @@ private:
 	CEMMCDevice m_EMMC;
 	FATFS m_FileSystem;
 	boolean m_bStorageOK;
+	boolean m_bHasMenu;
+	boolean m_bExit;
 	CBcmRandomNumberGenerator m_Random;
 
 	CBcmFrameBuffer *m_pFrameBuffer;

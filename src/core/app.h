@@ -20,6 +20,10 @@ public:
 	virtual bool StorageAvailable() = 0;
 	// Status and log lines shown when no keyboard is found (oldest first).
 	virtual int Diagnostics(const char **lines, int max) { return 0; }
+	// True when the card has the boot menu (pi-launcher) to go back to.
+	virtual bool HasMenu() { return false; }
+	// Restarts into the boot menu (on the Pi the main loop then ends).
+	virtual void ReturnToMenu() {}
 };
 
 enum Screen { ScrSplash, ScrProfiles, ScrNewProfile, ScrCourses, ScrMap, ScrIntro, ScrTyping, ScrResults,
@@ -134,6 +138,8 @@ private:
 	Lang m_lang;
 	int m_sel;          // selection on the current menu
 	bool m_confirmDelete;
+	bool m_confirmMenu;  // "Go back to the menu?" is open
+	int m_leaving;       // frames drawn since "Going back to the menu" (-1: staying)
 	bool m_diag;         // F12 diagnostics viewer open
 	int m_diagScroll;    // lines scrolled up from the end of the log
 

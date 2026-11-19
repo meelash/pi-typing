@@ -1,0 +1,21 @@
+# On a card with the boot menu (pi-launcher), Esc on the players screen
+# offers to go back to it. Without the menu, Esc does nothing there.
+wait 3000
+expect profiles
+key esc
+expect profiles
+expect-menu-return 0
+menu on
+shot 50-profiles-menu
+key esc
+shot 51-menu-question
+key esc
+expect profiles
+expect-menu-return 0
+key esc
+key enter
+wait 200
+shot 52-going-to-menu
+expect-menu-return 1
+wait 500
+expect-menu-return 1

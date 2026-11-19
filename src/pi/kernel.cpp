@@ -25,6 +25,8 @@ CKernel::CKernel(void)
 	m_USBHCI(&m_Interrupt, &m_Timer, TRUE),  // TRUE: plug-and-play
 	m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
 	m_bStorageOK(FALSE),
+	m_bHasMenu(FALSE),
+	m_bExit(FALSE),
 	m_pFrameBuffer(0),
 	m_bDoubleBuffered(FALSE),
 	m_bSwapRedBlue(FALSE),
@@ -77,6 +79,10 @@ boolean CKernel::Initialize(void)
 	if (m_EMMC.Initialize() && f_mount(&m_FileSystem, "SD:", 1) == FR_OK)
 		m_bStorageOK = TRUE;
 	AddStatus(m_bStorageOK ? "SD card: mounted" : "SD card: not available");
+
+	// Started from the boot menu (pi-launcher)? Its file list is on the card.
+	FILINFO Info;
+	m_bHasMenu = m_bStorageOK && f_stat("SD:/apps/apps.txt", &Info) == FR_OK;
 
 	return TRUE;
 }
@@ -175,6 +181,21 @@ bool CKernel::SaveFile(const char *name, const char *buf, int len)
 	return bOK;
 }
 
+bool CKernel::HasMenu() { return m_bHasMenu; }
+
+// The menu shows itself after a restart when this file exists (instead of
+// starting the last program again), then deletes it.
+void CKernel::ReturnToMenu()
+{
+	FIL File;
+	if (f_open(&File, "SD:/apps/show-menu", FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {
+		UINT nWritten;
+		f_write(&File, "1", 1, &nWritten);
+		f_close(&File);
+	}
+	m_bExit = TRUE;
+}
+
 void CKernel::StartSound(void)
 {
 	// cmdline.txt: sounddev=sndhdmi (default), sndpwm (headphone jack) or none
@@ -251,7 +272,7 @@ void CKernel::Run(void)
 	Canvas canvas(m_pCanvas, App::W, App::H);
 	StartSound();
 
-	while (true) {
+	while (!m_bExit) {
 		usbinput::Update(&m_USBHCI);
 		unsigned char ucUsage, ucMods;
 		while (usbinput::Poll(&ucUsage, &ucMods))

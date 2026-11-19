@@ -29,6 +29,7 @@ Don't change the other files: `cmdline.txt` holds your settings, and `progress.t
 - **Arrows** move, **Enter** chooses, **Esc** goes back or pauses a lesson.
 - **F2** turns sound on or off. **Delete** on the players screen removes a player (confirm with **Y**).
 - Several keyboards can be plugged in at once.
+- On a card with the boot menu ([pi-launcher](https://github.com/meelash/pi-launcher)), **Esc** on the players screen goes back to the menu.
 
 ## If something doesn't work
 
